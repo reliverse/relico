@@ -81,7 +81,7 @@ async function publishJsr(dryRun: boolean) {
       });
     } else {
       await execaCommand("bun build:jsr", { stdio: "inherit" });
-      await execaCommand("bunx jsr publish --allow-slow-types", {
+      await execaCommand("bunx jsr publish --allow-slow-types --allow-dirty", {
         stdio: "inherit",
       });
     }

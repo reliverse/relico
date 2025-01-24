@@ -1,82 +1,12 @@
 import type { Static } from "@sinclair/typebox";
 
+import { getCurrentTerminalName } from "@reliverse/runtime";
+import { env, isWindows } from "@reliverse/runtime";
 import { Type } from "@sinclair/typebox";
 import { Value } from "@sinclair/typebox/value";
-import { env, isWindows, isLinux, isMacOS } from "std-env";
 
 /* ------------------------------------------------------------------
- * 1) getCurrentTerminalName
- * ------------------------------------------------------------------ */
-export function getCurrentTerminalName(): string {
-  const termProgram: string | undefined = env["TERM_PROGRAM"];
-  const term: string | undefined = env["TERM"];
-  const terminalEmulator: string | undefined = env["TERMINAL_EMULATOR"];
-
-  if (termProgram) {
-    switch (termProgram.toLowerCase()) {
-      case "vscode":
-        return "VSCode Terminal";
-      case "terminus-sublime":
-        return "Terminus Sublime";
-      case "hyper":
-        return "Hyper";
-      case "iterm.app":
-      case "iterm":
-        return "iTerm2";
-      case "alacritty":
-        return "Alacritty";
-      case "wezterm":
-        return "WezTerm";
-      case "terminus":
-        return "Terminus";
-      default:
-        return `TERM_PROGRAM: ${termProgram}`;
-    }
-  }
-
-  if (terminalEmulator) {
-    switch (terminalEmulator.toLowerCase()) {
-      case "jetbrains-jediterm":
-        return "JetBrains JediTerm";
-      case "cmder":
-        return "Cmder";
-      case "conemu":
-        return "ConEmu";
-      default:
-        return `TERMINAL_EMULATOR: ${terminalEmulator}`;
-    }
-  }
-
-  if (term) {
-    const lowered: string = term.toLowerCase();
-    switch (lowered) {
-      case "xterm-256color":
-        return "Xterm 256 Color";
-      case "alacritty":
-        return "Alacritty";
-      case "xterm":
-        return "Xterm";
-      case "linux":
-        return "Linux Console Kernel";
-      default:
-        return `TERM: ${term}`;
-    }
-  }
-
-  // Fallback based on platform if terminal cannot be determined
-  if (isWindows) {
-    return "Windows Terminal";
-  } else if (isMacOS) {
-    return "macOS Terminal";
-  } else if (isLinux) {
-    return "Linux Terminal";
-  }
-
-  return "Unknown Terminal";
-}
-
-/* ------------------------------------------------------------------
- * 2) TypeBox schemas for user-configurable colors
+ * 1) TypeBox schemas for user-configurable colors
  * ------------------------------------------------------------------ */
 export const ColorDefinitionSchema = Type.Tuple([
   Type.String(),
@@ -104,7 +34,7 @@ export const RelicoConfigSchema = Type.Object(
 export type RelicoConfig = Static<typeof RelicoConfigSchema>;
 
 /* ------------------------------------------------------------------
- * 3) Environment-based color detection
+ * 2) Environment-based color detection
  * ------------------------------------------------------------------ */
 const argv: string[] = typeof process === "undefined" ? [] : process.argv;
 const isDisabled: boolean = "NO_COLOR" in env || argv.includes("--no-color");
@@ -137,7 +67,7 @@ function detectColorLevel(): 0 | 1 | 2 | 3 {
 }
 
 /* ------------------------------------------------------------------
- * 4) Internal color definitions
+ * 3) Internal color definitions
  * ------------------------------------------------------------------ */
 type ColorArray = [string, string, string?];
 
@@ -201,7 +131,7 @@ const windowsTerminalColors: Record<string, ColorArray> = {
 };
 
 /* ------------------------------------------------------------------
- * 5) Internal state & logic
+ * 4) Internal state & logic
  * ------------------------------------------------------------------ */
 let config: RelicoConfig = {
   colorLevel: detectColorLevel(),
@@ -298,7 +228,7 @@ function identityColor(text: string | number): string {
 rebuild();
 
 /* ------------------------------------------------------------------
- * 6) Public API
+ * 5) Public API
  * ------------------------------------------------------------------ */
 
 /**
@@ -364,7 +294,7 @@ export function rgb(
 }
 
 /* ------------------------------------------------------------------
- * 7) Typed interface for `re`
+ * 6) Typed interface for `re`
  * ------------------------------------------------------------------ */
 export type IRelicoColors = {
   reset(text: string | number): string;
@@ -496,7 +426,7 @@ newRebuild();
 export const re: IRelicoColors = typedRe;
 
 /* ------------------------------------------------------------------
- * 8) colorSupport
+ * 7) colorSupport
  * ------------------------------------------------------------------ */
 export type ColorSupport = {
   isColorSupported: boolean;

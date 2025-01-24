@@ -6,5 +6,6 @@
     "examples/example.ts",
     "{build,eslint}.config.{js,ts}"
   ],
-  "project": ["src/**/*.ts", "{build,eslint}.config.{js,ts}"]
+  "project": ["src/**/*.ts", "{build,eslint}.config.{js,ts}"],
+  "ignoreDependencies": ["bun-types"]
 }

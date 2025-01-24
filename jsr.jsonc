@@ -1,6 +1,6 @@
 {
   "name": "@reliverse/relico",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": "blefnk",
   "license": "MIT",
   "exports": "./dist-jsr/main.ts",
