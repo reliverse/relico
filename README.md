@@ -11,12 +11,54 @@
   </a>
 </p>
 
-**@reliverse/relico is a modern terminal color formatting library** that provides a type-safe and flexible way to add colors and styles to your command-line output. Built with TypeScript and TypeBox for enhanced reliability and developer experience.
+**@reliverse/relico is an accessible and modern terminal color formatting library** that provides a type-safe and flexible way to add colors and styles to your command-line output. Built with TypeScript and TypeBox for enhanced reliability and developer experience.
 
 ## Installation
 
 ```sh
 bun add @reliverse/relico # Replace "bun" with npm, pnpm, or yarn if desired
+```
+
+**Configure `relico.config.ts`**:
+
+```ts
+import { defineConfig } from "@reliverse/relico";
+
+export default defineConfig({
+  // Set the color level: 3 for truecolor
+  colorLevel: 3,
+  // Choose the theme: "primary" or "secondary"
+  theme: "secondary",
+  // Override specific colors
+  // Use Intellisense to see the available colors
+  customColors: {
+    blue: ["#5f87ff", "#5f87ff"],
+    red: ["#ff5555", "#ff0000"],
+    green: ["#00ff00", "#00cc00"],
+    // Note: The following text formatting
+    // colors can be defined only via ANSI:
+    // reset: ["\x1b[0m", "\x1b[0m"],
+    // bold: ["\x1b[1m", "\x1b[22m", "\x1b[22m\x1b[1m"],
+    // dim: ["\x1b[2m", "\x1b[22m", "\x1b[22m\x1b[2m"],
+    // italic: ["\x1b[3m", "\x1b[23m"],
+    // underline: ["\x1b[4m", "\x1b[24m"],
+    // inverse: ["\x1b[7m", "\x1b[27m"],
+    // hidden: ["\x1b[8m", "\x1b[28m"],
+    // strikethrough: ["\x1b[9m", "\x1b[29m"],
+  },
+});
+```
+
+**To load config (example)**:
+
+```ts
+// Initialize user config, so you override any relico's default settings
+function main() {
+  console.log(re.blue("Loading user config..."));
+  await initUserConfig();
+  console.log(re.blue("If this blue log looks different than line above, then config is loaded successfully. Yay! 🎉"));
+}
+main();
 ```
 
 ## Key Features

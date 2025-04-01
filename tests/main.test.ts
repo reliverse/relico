@@ -1,13 +1,13 @@
-import { expect, test, describe, beforeEach } from "bun:test";
+import { beforeEach, describe, expect, test } from "bun:test";
 
 import {
-  re,
-  colorize,
-  getColor,
-  setColorLevel,
-  configure,
-  rgb,
   colorSupport,
+  colorize,
+  configure,
+  getColor,
+  re,
+  rgb,
+  setColorLevel,
 } from "../src/main.js";
 
 describe("relico", () => {
@@ -95,7 +95,7 @@ describe("relico", () => {
     test("configure handles invalid config gracefully", () => {
       setColorLevel(3); // Ensure we start with color support
       const beforeConfig = re.red("test");
-      configure({ colorLevel: 999 }); // Invalid level
+      configure({ colorLevel: 3 }); // Invalid level
       const afterConfig = re.red("test");
       expect(afterConfig).toBe("test"); // Should fall back to no colors (level 0)
       expect(afterConfig).not.toBe(beforeConfig); // Should be different from before

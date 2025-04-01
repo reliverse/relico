@@ -1,37 +1,88 @@
-import type { Static } from "@sinclair/typebox";
-
 import { getCurrentTerminalName } from "@reliverse/runtime";
 import { env, isWindows } from "@reliverse/runtime";
-import { Type } from "@sinclair/typebox";
-import { Value } from "@sinclair/typebox/value";
+import { loadConfig } from "c12";
 
 /* ------------------------------------------------------------------
- * 1) TypeBox schemas for user-configurable colors
+ * 1) Types for user-configurable colors
  * ------------------------------------------------------------------ */
-export const ColorDefinitionSchema = Type.Tuple([
-  Type.String(),
-  Type.String(),
-  Type.Optional(Type.String()),
-]);
 
-export const ColorMapSchema = Type.Record(Type.String(), ColorDefinitionSchema);
+/** A color definition: [primary, secondary, optional replacement]. */
+export type ColorDefinition = [string, string, string?];
 
-export const RelicoConfigSchema = Type.Object(
-  {
-    colorLevel: Type.Optional(
-      Type.Union([
-        Type.Literal(0),
-        Type.Literal(1),
-        Type.Literal(2),
-        Type.Literal(3),
-      ]),
-    ),
-    customColors: Type.Optional(ColorMapSchema),
-  },
-  { additionalProperties: false },
-);
+/** A list of default color keys. */
+export const defaultColorKeys = [
+  "reset",
+  "bold",
+  "dim",
+  "italic",
+  "underline",
+  "inverse",
+  "hidden",
+  "strikethrough",
+  "black",
+  "red",
+  "green",
+  "yellow",
+  "blue",
+  "magenta",
+  "cyan",
+  "white",
+  "gray",
+  "bgBlack",
+  "bgRed",
+  "bgGreen",
+  "bgYellow",
+  "bgBlue",
+  "bgMagenta",
+  "bgCyan",
+  "bgWhite",
+  "blackBright",
+  "redBright",
+  "greenBright",
+  "yellowBright",
+  "blueBright",
+  "magentaBright",
+  "cyanBright",
+  "whiteBright",
+  "bgBlackBright",
+  "bgRedBright",
+  "bgGreenBright",
+  "bgYellowBright",
+  "bgBlueBright",
+  "bgMagentaBright",
+  "bgCyanBright",
+  "bgWhiteBright",
+] as const;
+export type DefaultColorKeys = (typeof defaultColorKeys)[number];
 
-export type RelicoConfig = Static<typeof RelicoConfigSchema>;
+/** A map of custom color definitions. IntelliSense will suggest only valid keys. */
+export type ColorMap = Partial<Record<DefaultColorKeys, ColorDefinition>>;
+
+/**
+ * `relico.config.ts` configuration options.
+ */
+export type RelicoConfig = {
+  /**
+   * Determines which ANSI mode is used:
+   * - 0: no color
+   * - 1: basic ANSI (8 colors)
+   * - 2: 256 color palette
+   * - 3: 24-bit truecolor
+   */
+  colorLevel?: 0 | 1 | 2 | 3;
+  /**
+   * Theme to use for color definitions.
+   * - "primary": primary theme
+   * - "secondary": secondary theme
+   */
+  theme?: "primary" | "secondary";
+  /**
+   * Custom color definitions.
+   * - Use IntelliSense to see available colors.
+   * - Theming: ["primary", "secondary"]
+   */
+  customColors?: ColorMap;
+};
 
 /* ------------------------------------------------------------------
  * 2) Environment-based color detection
@@ -47,22 +98,20 @@ const isCompatibleTerminal: boolean =
   typeof process !== "undefined" &&
   Boolean(process.stdout) &&
   Boolean(process.stdout.isTTY) &&
-  env["TERM"] !== "dumb";
+  env.TERM !== "dumb";
 
-const colorterm: string = (env["COLORTERM"] ?? "").toLowerCase();
+const colorterm: string = (env.COLORTERM ?? "").toLowerCase();
 const supportsTrueColor: boolean =
   colorterm === "truecolor" || colorterm === "24bit";
 
-/** Detect the color level from environment, with explicit return. */
+/** Detects the color level from environment. */
 function detectColorLevel(): 0 | 1 | 2 | 3 {
   if (isDisabled) return 0;
   if (isForced) return 3;
   if (supportsTrueColor) return 3;
   if (isWindows) return 2;
   if (isCI) return 2;
-  if (isCompatibleTerminal) {
-    return 2;
-  }
+  if (isCompatibleTerminal) return 2;
   return 0;
 }
 
@@ -71,9 +120,15 @@ function detectColorLevel(): 0 | 1 | 2 | 3 {
  * ------------------------------------------------------------------ */
 type ColorArray = [string, string, string?];
 
-const baseColors: Record<string, ColorArray> = {
+/**
+ * Base color definitions.
+ * For formatting codes (bold, italic, etc.) the escape sequences are fixed.
+ * For colors (like red, blue, etc.), hex strings are provided which will be
+ * converted to appropriate ANSI codes based on the current colorLevel.
+ */
+const baseColors: Record<DefaultColorKeys, ColorArray> = {
+  // Text formatting
   reset: ["\x1b[0m", "\x1b[0m"],
-
   bold: ["\x1b[1m", "\x1b[22m", "\x1b[22m\x1b[1m"],
   dim: ["\x1b[2m", "\x1b[22m", "\x1b[22m\x1b[2m"],
   italic: ["\x1b[3m", "\x1b[23m"],
@@ -82,52 +137,56 @@ const baseColors: Record<string, ColorArray> = {
   hidden: ["\x1b[8m", "\x1b[28m"],
   strikethrough: ["\x1b[9m", "\x1b[29m"],
 
-  black: ["\x1b[30m", "\x1b[39m"],
-  red: ["\x1b[31m", "\x1b[39m"],
-  green: ["\x1b[32m", "\x1b[39m"],
-  yellow: ["\x1b[33m", "\x1b[39m"],
-  blue: ["\x1b[34m", "\x1b[39m"],
-  magenta: ["\x1b[35m", "\x1b[39m"],
-  cyan: ["\x1b[36m", "\x1b[39m"],
-  white: ["\x1b[37m", "\x1b[39m"],
-  gray: ["\x1b[90m", "\x1b[39m"],
+  // Foreground colors.
+  black: ["#000000", "#000000"],
+  red: ["#ff5555", "#ff0000"],
+  green: ["#00ff00", "#00ff00"],
+  yellow: ["#ffff00", "#ffff00"],
+  blue: ["#0000ff", "#0000ff"],
+  magenta: ["#ff00ff", "#ff00ff"],
+  cyan: ["#00ffff", "#00ffff"],
+  white: ["#ffffff", "#ffffff"],
+  gray: ["#808080", "#808080"],
 
-  bgBlack: ["\x1b[40m", "\x1b[49m"],
-  bgRed: ["\x1b[41m", "\x1b[49m"],
-  bgGreen: ["\x1b[42m", "\x1b[49m"],
-  bgYellow: ["\x1b[43m", "\x1b[49m"],
-  bgBlue: ["\x1b[44m", "\x1b[49m"],
-  bgMagenta: ["\x1b[45m", "\x1b[49m"],
-  bgCyan: ["\x1b[46m", "\x1b[49m"],
-  bgWhite: ["\x1b[47m", "\x1b[49m"],
+  // Background colors.
+  bgBlack: ["#000000", "#000000"],
+  bgRed: ["#ff5555", "#ff0000"],
+  bgGreen: ["#00ff00", "#00ff00"],
+  bgYellow: ["#ffff00", "#ffff00"],
+  bgBlue: ["#0000ff", "#0000ff"],
+  bgMagenta: ["#ff00ff", "#ff00ff"],
+  bgCyan: ["#00ffff", "#00ffff"],
+  bgWhite: ["#ffffff", "#ffffff"],
 
-  blackBright: ["\x1b[90m", "\x1b[39m"],
-  redBright: ["\x1b[91m", "\x1b[39m"],
-  greenBright: ["\x1b[92m", "\x1b[39m"],
-  yellowBright: ["\x1b[93m", "\x1b[39m"],
-  blueBright: ["\x1b[94m", "\x1b[39m"],
-  magentaBright: ["\x1b[95m", "\x1b[39m"],
-  cyanBright: ["\x1b[96m", "\x1b[39m"],
-  whiteBright: ["\x1b[97m", "\x1b[39m"],
+  // Bright colors.
+  blackBright: ["#000000", "#000000"],
+  redBright: ["#ff5555", "#ff5555"],
+  greenBright: ["#50fa7b", "#50fa7b"],
+  yellowBright: ["#f1fa8c", "#f1fa8c"],
+  blueBright: ["#24bdff", "#24bdff"],
+  magentaBright: ["#ff79c6", "#ff79c6"],
+  cyanBright: ["#8be9fd", "#8be9fd"],
+  whiteBright: ["#ffffff", "#ffffff"],
 
-  bgBlackBright: ["\x1b[100m", "\x1b[49m"],
-  bgRedBright: ["\x1b[101m", "\x1b[49m"],
-  bgGreenBright: ["\x1b[102m", "\x1b[49m"],
-  bgYellowBright: ["\x1b[103m", "\x1b[49m"],
-  bgBlueBright: ["\x1b[104m", "\x1b[49m"],
-  bgMagentaBright: ["\x1b[105m", "\x1b[49m"],
-  bgCyanBright: ["\x1b[106m", "\x1b[49m"],
-  bgWhiteBright: ["\x1b[107m", "\x1b[49m"],
+  // Bright background colors.
+  bgBlackBright: ["#000000", "#000000"],
+  bgRedBright: ["#ff5555", "#ff5555"],
+  bgGreenBright: ["#50fa7b", "#50fa7b"],
+  bgYellowBright: ["#f1fa8c", "#f1fa8c"],
+  bgBlueBright: ["#24bdff", "#24bdff"],
+  bgMagentaBright: ["#ff79c6", "#ff79c6"],
+  bgCyanBright: ["#8be9fd", "#8be9fd"],
+  bgWhiteBright: ["#ffffff", "#ffffff"],
 };
 
-const windowsTerminalColors: Record<string, ColorArray> = {
+const windowsTerminalColors: Record<DefaultColorKeys, ColorArray> = {
   ...baseColors,
-  red: ["\x1b[38;2;255;85;85m", "\x1b[39m"],
-  green: ["\x1b[38;2;80;250;123m", "\x1b[39m"],
-  yellow: ["\x1b[38;2;241;250;140m", "\x1b[39m"],
-  blue: ["\x1b[38;2;98;114;164m", "\x1b[39m"],
-  magenta: ["\x1b[38;2;255;121;198m", "\x1b[39m"],
-  cyan: ["\x1b[38;2;139;233;253m", "\x1b[39m"],
+  red: ["#ff5555", "#ff5555"],
+  green: ["#50fa7b", "#50fa7b"],
+  yellow: ["#f1fa8c", "#f1fa8c"],
+  blue: ["#6272a4", "#6272a4"],
+  magenta: ["#ff79c6", "#ff79c6"],
+  cyan: ["#8be9fd", "#8be9fd"],
 };
 
 /* ------------------------------------------------------------------
@@ -135,61 +194,149 @@ const windowsTerminalColors: Record<string, ColorArray> = {
  * ------------------------------------------------------------------ */
 let config: RelicoConfig = {
   colorLevel: detectColorLevel(),
+  theme: "primary", // default theme; can be overridden in user config
 };
 
 let colorMap: Record<string, ColorArray> = {};
 let colorFunctions: Record<string, (text: string | number) => string> = {};
 
-function replaceClose(
-  str: string,
-  close: string,
-  replace: string,
-  index: number,
-): string {
-  let result = "";
-  let cursor = 0;
-  let i = index;
-  while (i !== -1) {
-    result += str.substring(cursor, i) + replace;
-    cursor = i + close.length;
-    i = str.indexOf(close, cursor);
+/**
+ * Converts a hex color string to its r, g, b components.
+ * Supports both 3-digit and 6-digit formats.
+ */
+function hexToRGB(hex: string): { r: number; g: number; b: number } {
+  if (hex.startsWith("#")) {
+    hex = hex.slice(1);
   }
-  return result + str.substring(cursor);
+  if (hex.length === 3) {
+    hex = hex
+      .split("")
+      .map((c) => c + c)
+      .join("");
+  }
+  if (hex.length !== 6) {
+    throw new Error(`Invalid hex color: ${hex}`);
+  }
+  const r = Number.parseInt(hex.substring(0, 2), 16);
+  const g = Number.parseInt(hex.substring(2, 4), 16);
+  const b = Number.parseInt(hex.substring(4, 6), 16);
+  return { r, g, b };
 }
 
-function createFormatter(
-  open: string,
-  close: string,
-  replace: string = open,
-): (input: string | number) => string {
-  return (input: string | number): string => {
-    const stringed = String(input);
-    const idx: number = stringed.indexOf(close, open.length);
-    if (idx !== -1) {
-      return open + replaceClose(stringed, close, replace, idx) + close;
+/**
+ * Converts a hex color string into a 24-bit truecolor ANSI escape sequence.
+ */
+function hexToAnsiParts(
+  hex: string,
+  isBg = false,
+): { open: string; close: string } {
+  const { r, g, b } = hexToRGB(hex);
+  const open = isBg ? `\x1b[48;2;${r};${g};${b}m` : `\x1b[38;2;${r};${g};${b}m`;
+  const close = isBg ? "\x1b[49m" : "\x1b[39m";
+  return { open, close };
+}
+
+/**
+ * Converts a hex color string to a 256-color ANSI escape sequence.
+ */
+function hexToAnsi256(hex: string, isBg = false): string {
+  const { r, g, b } = hexToRGB(hex);
+  // Convert each channel to a 0-5 scale
+  const r5 = Math.round(r / 51);
+  const g5 = Math.round(g / 51);
+  const b5 = Math.round(b / 51);
+  const index = 16 + 36 * r5 + 6 * g5 + b5;
+  return isBg ? `\x1b[48;5;${index}m` : `\x1b[38;5;${index}m`;
+}
+
+/**
+ * Converts a hex color string to a basic ANSI color escape sequence.
+ * Uses a simple nearest neighbor search among the 8 standard colors.
+ */
+const basicColors: {
+  name: string;
+  rgb: { r: number; g: number; b: number };
+  fg: number;
+  bg: number;
+}[] = [
+  { name: "black", rgb: { r: 0, g: 0, b: 0 }, fg: 30, bg: 40 },
+  { name: "red", rgb: { r: 205, g: 0, b: 0 }, fg: 31, bg: 41 },
+  { name: "green", rgb: { r: 0, g: 205, b: 0 }, fg: 32, bg: 42 },
+  { name: "yellow", rgb: { r: 205, g: 205, b: 0 }, fg: 33, bg: 43 },
+  { name: "blue", rgb: { r: 0, g: 0, b: 238 }, fg: 34, bg: 44 },
+  { name: "magenta", rgb: { r: 205, g: 0, b: 205 }, fg: 35, bg: 45 },
+  { name: "cyan", rgb: { r: 0, g: 205, b: 205 }, fg: 36, bg: 46 },
+  { name: "white", rgb: { r: 229, g: 229, b: 229 }, fg: 37, bg: 47 },
+];
+
+function hexToAnsiBasic(hex: string, isBg = false): string {
+  const { r, g, b } = hexToRGB(hex);
+  // Find nearest basic color using Euclidean distance
+  let bestMatch = basicColors[0];
+  let bestDistance = Number.MAX_VALUE;
+  for (const color of basicColors) {
+    const dr = r - color.rgb.r;
+    const dg = g - color.rgb.g;
+    const db = b - color.rgb.b;
+    const distance = dr * dr + dg * dg + db * db;
+    if (distance < bestDistance) {
+      bestDistance = distance;
+      bestMatch = color;
     }
-    return open + stringed + close;
-  };
+  }
+  const code = isBg ? bestMatch.bg : bestMatch.fg;
+  return `\x1b[${code}m`;
 }
 
+/**
+ * Converts a ColorDefinition (which may include hex strings) into ANSI codes.
+ * The conversion used depends on the current config.colorLevel.
+ */
+function convertColorDefinition(key: string, def: ColorArray): ColorArray {
+  const isBg = key.toLowerCase().startsWith("bg");
+  const theme = config.theme ?? "primary";
+  const chosen = theme === "primary" ? def[0] : def[1];
+
+  function convert(str: string): string {
+    if (!str.startsWith("#")) return str;
+    if (config.colorLevel === 3) {
+      return hexToAnsiParts(str, isBg).open;
+    }
+    if (config.colorLevel === 2) {
+      return hexToAnsi256(str, isBg);
+    }
+    if (config.colorLevel === 1) {
+      return hexToAnsiBasic(str, isBg);
+    }
+    return "";
+  }
+  const openConverted = convert(chosen);
+  const close = isBg ? "\x1b[49m" : "\x1b[39m";
+  const rep = def[2]
+    ? def[2].startsWith("#")
+      ? convert(def[2])
+      : def[2]
+    : undefined;
+  return [openConverted, close, rep] as ColorArray;
+}
+
+/**
+ * Builds a complete color map from the default colors,
+ * merging any overrides from cfg.customColors.
+ */
 function buildColorMap(cfg: RelicoConfig): Record<string, ColorArray> {
   const terminalName: string = getCurrentTerminalName();
   const isWinTerm: boolean = terminalName === "Windows Terminal";
 
   if (cfg.colorLevel === 0) {
-    const map: Record<string, ColorArray> = {};
+    const noColorMap: Record<string, ColorArray> = {};
     for (const k of Object.keys(baseColors)) {
-      map[k] = ["", "", ""];
+      noColorMap[k] = ["", "", ""];
     }
-    return map;
+    return noColorMap;
   }
 
-  let builtIn: Record<string, ColorArray>;
-  if (isWinTerm && cfg.colorLevel === 3) {
-    builtIn = { ...windowsTerminalColors };
-  } else {
-    builtIn = { ...baseColors };
-  }
+  let builtIn: Record<string, ColorArray> = { ...baseColors };
 
   if (cfg.customColors) {
     for (const [k, v] of Object.entries(cfg.customColors)) {
@@ -197,100 +344,39 @@ function buildColorMap(cfg: RelicoConfig): Record<string, ColorArray> {
     }
   }
 
+  if (isWinTerm && cfg.colorLevel === 3) {
+    builtIn = { ...windowsTerminalColors, ...builtIn };
+  }
+
+  for (const key of Object.keys(builtIn)) {
+    builtIn[key] = convertColorDefinition(key, builtIn[key]);
+  }
+
   return builtIn;
 }
 
-function initColorFunctions(): void {
-  colorFunctions = {};
-  if (config.colorLevel === 0) {
-    for (const k of Object.keys(baseColors)) {
-      colorFunctions[k] = identityColor;
-    }
-    return;
-  }
-
-  for (const [key, [open, close, replace]] of Object.entries(colorMap)) {
-    colorFunctions[key] = createFormatter(open, close, replace ?? open);
-  }
+/**
+ * Creates a color formatter function that wraps text with open and close ANSI codes.
+ * It escapes any occurrence of the close sequence in the text.
+ */
+function createFormatter(
+  open: string,
+  close: string,
+  replace: string = open,
+): (input: string | number) => string {
+  const escapedClose = close.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&");
+  const regex = new RegExp(escapedClose, "g");
+  return (input: string | number): string => {
+    const stringed = String(input);
+    return open + stringed.replace(regex, replace) + close;
+  };
 }
-
-// biome-ignore lint/suspicious/noFunctionAssign: <explanation>
-function rebuild(): void {
-  colorMap = buildColorMap(config);
-  initColorFunctions();
-}
-
-function identityColor(text: string | number): string {
-  return String(text);
-}
-
-/* Initialize once */
-rebuild();
-
-/* ------------------------------------------------------------------
- * 5) Public API
- * ------------------------------------------------------------------ */
 
 /**
- * Configures the library with a partial or complete `RelicoConfig`.
- * For any invalid fields, a warning is shown and they are ignored.
+ * Identity function for when colors are disabled.
  */
-export function configure(userInput: unknown): void {
-  let newObj: RelicoConfig | null = null;
-  if (typeof userInput === "object" && userInput !== null) {
-    newObj = { ...config, ...(userInput as Partial<RelicoConfig>) };
-  } else {
-    newObj = { ...config };
-  }
-
-  try {
-    const parsed: RelicoConfig = Value.Cast(RelicoConfigSchema, newObj);
-    config = parsed;
-  } catch (err) {
-    console.warn("Invalid relico config:", err);
-    return;
-  }
-
-  rebuild();
-}
-
-/** Returns a read-only copy of the current configuration. */
-export function getConfig(): RelicoConfig {
-  return { ...config };
-}
-
-/** Returns a color function by name (or `reset` or identity if not found). */
-export function getColor(name: string): (text: string | number) => string {
-  const maybeFn = colorFunctions[name];
-  if (maybeFn) return maybeFn;
-  const resetFn = colorFunctions["reset"];
-  if (resetFn) return resetFn;
-  return identityColor;
-}
-
-/** Colorize text with a color function. */
-export function colorize(name: string, text: string | number): string {
-  const fn = getColor(name);
-  return fn(text);
-}
-
-/** Set the color level (0=none,1=basic,2=256,3=truecolor). */
-export function setColorLevel(level: 0 | 1 | 2 | 3): void {
-  configure({ colorLevel: level });
-}
-
-/** Returns a custom "rgb" color function if level=3, otherwise identity. */
-export function rgb(
-  r: number,
-  g: number,
-  b: number,
-): (text: string | number) => string {
-  if (config.colorLevel === 3) {
-    const open = `\x1b[38;2;${String(r)};${String(g)};${String(b)}m`;
-    const close = "\x1b[39m";
-    return createFormatter(open, close);
-  }
-  return identityColor;
+function identityColor(text: string | number): string {
+  return String(text);
 }
 
 /* ------------------------------------------------------------------
@@ -342,12 +428,9 @@ export type IRelicoColors = {
   bgCyanBright(text: string | number): string;
   bgWhiteBright(text: string | number): string;
 
-  // For user-defined colors: e.g. customColors: { highlight: ["\x1b[...m", ...] }
   [k: string]: (text: string | number) => string;
 };
 
-/* We'll build `re` after `colorFunctions` is built. We'll fill each property with identity
-   to be safe, then override with the computed color. */
 const typedRe: IRelicoColors = {
   reset: identityColor,
   bold: identityColor,
@@ -395,35 +478,98 @@ const typedRe: IRelicoColors = {
   bgWhiteBright: identityColor,
 };
 
+export const re: IRelicoColors = typedRe;
+
 /**
- * Refresh typedRe after colorFunctions is built, so that direct usage
- * like `re.red(...)` is correct.
+ * Refreshes the typed color interface to match the current color functions.
  */
 function refreshTypedRe(): void {
-  // Start by resetting to identityColor
   for (const colorName of Object.keys(typedRe)) {
     typedRe[colorName] = identityColor;
   }
-  // Now override from colorFunctions
   for (const [k, fn] of Object.entries(colorFunctions)) {
     typedRe[k] = fn;
   }
 }
 
-/** We monkey-patch rebuild() so it also calls `refreshTypedRe()`. */
-const originalRebuild: () => void = rebuild;
-function newRebuild(): void {
-  originalRebuild();
-  refreshTypedRe();
+function initColorFunctions(): void {
+  colorFunctions = {};
+  if (config.colorLevel === 0) {
+    for (const k of Object.keys(baseColors)) {
+      colorFunctions[k] = identityColor;
+    }
+    return;
+  }
+  for (const [key, [open, close, replace]] of Object.entries(colorMap)) {
+    colorFunctions[key] = createFormatter(open, close, replace ?? open);
+  }
 }
-(rebuild as unknown) = newRebuild;
-newRebuild();
 
 /**
- * The typed `re` object with all known color methods
- * plus user-defined ones (index signature).
+ * Rebuilds the internal state (color map and formatter functions)
+ * and refreshes the typed color interface.
  */
-export const re: IRelicoColors = typedRe;
+function rebuild(): void {
+  colorMap = buildColorMap(config);
+  initColorFunctions();
+  refreshTypedRe();
+}
+
+/* Rebuild the internal state */
+rebuild();
+
+/* ------------------------------------------------------------------
+ * 5) Public API
+ * ------------------------------------------------------------------ */
+
+/**
+ * Configures the library with a partial or complete
+ * `RelicoConfig`. Invalid fields are just ignored.
+ */
+export function configure(userInput: unknown): void {
+  let newConfig: RelicoConfig;
+  if (typeof userInput === "object" && userInput !== null) {
+    newConfig = { ...config, ...(userInput as Partial<RelicoConfig>) };
+  } else {
+    newConfig = { ...config };
+  }
+  config = newConfig;
+  rebuild();
+}
+
+/** Returns a color function by name (or `reset` or identity if not found). */
+export function getColor(name: string): (text: string | number) => string {
+  const maybeFn = colorFunctions[name];
+  if (maybeFn) return maybeFn;
+  const resetFn = colorFunctions.reset;
+  if (resetFn) return resetFn;
+  return identityColor;
+}
+
+/** Colorizes text with a color function. */
+export function colorize(name: string, text: string | number): string {
+  const fn = getColor(name);
+  return fn(text);
+}
+
+/** Sets the color level (0=none, 1=basic, 2=256, 3=truecolor). */
+export function setColorLevel(level: 0 | 1 | 2 | 3): void {
+  configure({ colorLevel: level });
+}
+
+/** Returns a custom "rgb" color function if level is truecolor, otherwise identity. */
+export function rgb(
+  r: number,
+  g: number,
+  b: number,
+): (text: string | number) => string {
+  if (config.colorLevel === 3) {
+    const open = `\x1b[38;2;${r};${g};${b}m`;
+    const close = "\x1b[39m";
+    return createFormatter(open, close);
+  }
+  return identityColor;
+}
 
 /* ------------------------------------------------------------------
  * 7) colorSupport
@@ -441,3 +587,60 @@ export const colorSupport: ColorSupport = {
   isDisabled,
   terminalName: getCurrentTerminalName(),
 };
+
+/* ------------------------------------------------------------------
+ * 8) c12-based user configuration loader
+ * ------------------------------------------------------------------ */
+export async function initUserConfig(): Promise<void> {
+  try {
+    const { config: userConfig } = await loadConfig({ name: "relico" });
+    configure(userConfig);
+  } catch (err) {
+    console.warn("Failed to load user config via c12:", err);
+  }
+}
+
+/* ------------------------------------------------------------------
+ * 9) defineConfig helper
+ * ------------------------------------------------------------------ */
+/**
+ * Provides type safety and IntelliSense for user configuration.
+ * Example usage in `relico.config.ts`:
+ * ```ts
+ * import { defineConfig } from "@reliverse/relico-cfg";
+ * export default defineConfig({
+ *   // Set the color level: 3 for truecolor
+ *   colorLevel: 3,
+ *   // Choose the theme: "primary" or "secondary"
+ *   theme: "secondary",
+ *   // Override specific colors
+ *   // - Use Intellisense to see the available colors
+ *   // - Theming: ["primary", "secondary"]
+ *   customColors: {
+ *     blue: ["#5f87ff", "#5f87ff"],
+ *     red: ["#ff5555", "#ff0000"],
+ *     green: ["#00ff00", "#00cc00"],
+ *     // Note: The following text formatting
+ *     // colors can be defined only via ANSI:
+ *     // reset: ["\x1b[0m", "\x1b[0m"],
+ *     // bold: ["\x1b[1m", "\x1b[22m", "\x1b[22m\x1b[1m"],
+ *     // dim: ["\x1b[2m", "\x1b[22m", "\x1b[22m\x1b[2m"],
+ *     // italic: ["\x1b[3m", "\x1b[23m"],
+ *     // underline: ["\x1b[4m", "\x1b[24m"],
+ *     // inverse: ["\x1b[7m", "\x1b[27m"],
+ *     // hidden: ["\x1b[8m", "\x1b[28m"],
+ *     // strikethrough: ["\x1b[9m", "\x1b[29m"],
+ *   },
+ * });
+ * ```
+ */
+export function defineConfig(config: RelicoConfig): RelicoConfig {
+  return config;
+}
+
+/* ------------------------------------------------------------------
+ * 10) Helper to get the current config (for internal use)
+ * ------------------------------------------------------------------ */
+function getConfig(): RelicoConfig {
+  return { ...config };
+}
