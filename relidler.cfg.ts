@@ -9,7 +9,7 @@ export default defineConfig({
   // Bump configuration
   bumpDisable: false,
   bumpFilter: ["package.json", "reliverse.ts"],
-  bumpMode: "autoPatch",
+  bumpMode: "autoMinor",
 
   // Common configuration
   commonPubPause: false,

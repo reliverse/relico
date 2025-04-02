@@ -1,5 +1,5 @@
-INFO    Auto-incrementing version from 1.0.1 using "autoPatch"
-SUCCESS Updated version from 1.0.1 to 1.0.2 in 1 file(s)
+INFO    Auto-incrementing version from 1.0.2 using "autoMinor"
+SUCCESS Updated version from 1.0.2 to 1.1.0 in 1 file(s)
 INFO    Initializing build process for main project to both NPM and JSR...
 INFO    Building JSR distribution...
 INFO    Using JSR builder: jsr
@@ -7,20 +7,20 @@ INFO    Starting regular_bundleUsingJsr: C:/B/L/relico/src -> C:/B/L/relico/dist
 SUCCESS Completed regular JSR bundling
 INFO    Paths replacement in C:/B/L/relico/dist-jsr/bin folder...
 INFO    Generating distribution package.json and tsconfig.json (isJsr=true)...
-SUCCESS [C:/B/L/relico/dist-jsr] Successfully created regular distribution: "dist-jsr" (C:/B/L/relico/dist-jsr/bin/main.ts) with (1 files (27.7 kB))
+SUCCESS [C:/B/L/relico/dist-jsr] Successfully created regular distribution: "dist-jsr" (C:/B/L/relico/dist-jsr/bin/main.ts) with (1 files (27.4 kB))
 INFO    Building NPM distribution...
 INFO    Using NPM builder: mkdist
 SUCCESS Build succeeded for default
-INFO      dist-npm/bin (total size: 16.5 kB)
-  └─ dist-npm/bin/main.js (10.6 kB)
-  └─ dist-npm/bin/main.d.ts (5.9 kB)
-INFO    Σ Total dist size: 16.5 kB (build time: 1 second)
-SUCCESS Regular bundle completed in 1.1 seconds using mkdist builder
+INFO      dist-npm/bin (total size: 16.1 kB)
+  └─ dist-npm/bin/main.js (10.5 kB)
+  └─ dist-npm/bin/main.d.ts (5.6 kB)
+INFO    Σ Total dist size: 16.1 kB (build time: 1.1 seconds)
+SUCCESS Regular bundle completed in 1.2 seconds using mkdist builder
 INFO    Paths replacement in C:/B/L/relico/dist-npm/bin folder...
 INFO    Generating distribution package.json and tsconfig.json (isJsr=false)...
-SUCCESS NPM distribution built successfully (2 files, 24.2 kB)
-SUCCESS [C:/B/L/relico/dist-npm] Successfully created regular distribution: "dist-npm" (C:/B/L/relico/dist-npm/bin/main.js) with (2 files (24.2 kB))
+SUCCESS NPM distribution built successfully (2 files, 23.7 kB)
+SUCCESS [C:/B/L/relico/dist-npm] Successfully created regular distribution: "dist-npm" (C:/B/L/relico/dist-npm/bin/main.js) with (2 files (23.7 kB))
 INFO    Publishing to JSR...
 INFO    Publishing to NPM...
 SUCCESS Distribution folders removed successfully
-SUCCESS 🎉 Build and publishing completed successfully (in 1.1 seconds)
+SUCCESS 🎉 Build and publishing completed successfully (in 1.2 seconds)
