@@ -3,13 +3,13 @@ import { defineConfig } from "@reliverse/relidler-cfg";
 /**
  * Reliverse Bundler Configuration
  * Hover over a field to see more details
- * @see https://github.com/reliverse/relidler
+ * @see https://github.com/reliverse/dler
  */
 export default defineConfig({
   // Bump configuration
   bumpDisable: false,
   bumpFilter: ["package.json", "reliverse.ts"],
-  bumpMode: "autoMinor",
+  bumpMode: "autoPatch",
 
   // Common configuration
   commonPubPause: false,
@@ -18,7 +18,7 @@ export default defineConfig({
 
   // Core configuration
   coreDeclarations: true,
-  coreEntryFile: "main.ts",
+  coreEntryFile: "mod.ts",
   coreEntrySrcDir: "src",
   coreIsCLI: false,
 
@@ -38,23 +38,14 @@ export default defineConfig({
   distNpmDirName: "dist-npm",
   distNpmOutFilesExt: "js",
 
-  // Libraries Relidler Plugin
+  // Libraries Dler Plugin
   // Publish specific dirs as separate packages
   // This feature is experimental at the moment
   // Please commit your changes before using it
   libsActMode: "main-project-only",
   libsDirDist: "dist-libs",
   libsDirSrc: "src/libs",
-  libsList: {
-    // "@acme/cli-libName": {
-    //   libDeclarations: true,
-    //   libDescription: "@acme/cli defineConfig",
-    //   libDirName: "libName",
-    //   libMainFile: "libName/libName-main.ts",
-    //   libPkgKeepDeps: true,
-    //   libTranspileMinify: true,
-    // },
-  },
+  libsList: {},
 
   // Logger setup
   logsFileName: "relinka.log",

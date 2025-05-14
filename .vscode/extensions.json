@@ -1,3 +1,8 @@
 {
-  "recommendations": ["fabiospampinato.vscode-open-multiple-files"]
+  "recommendations": [
+    "fabiospampinato.vscode-open-multiple-files",
+    "davidanson.vscode-markdownlint",
+    "usernamehw.errorlens",
+    "yoavbls.pretty-ts-errors"
+  ]
 }

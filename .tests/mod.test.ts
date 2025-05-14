@@ -8,7 +8,7 @@ import {
   re,
   rgb,
   setColorLevel,
-} from "../src/main.js";
+} from "../src/mod.js";
 
 describe("relico", () => {
   // Reset color level before each test

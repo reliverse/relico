@@ -1,4 +1,4 @@
-import { defineConfig } from "./src/main.js";
+import { defineConfig } from "./src/mod.js";
 
 /**
  * RELICO CONFIGURATION FILE
@@ -8,8 +8,9 @@ import { defineConfig } from "./src/main.js";
  */
 export default defineConfig({
   colorLevel: 3,
-  theme: "secondary",
+  theme: "primary",
   customColors: {
+    // ["primary", "secondary"]:
     blue: ["#5f87ff", "#5f87ff"],
     red: ["#ff5555", "#ff0000"],
     green: ["#00ff00", "#00cc00"],
