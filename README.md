@@ -62,11 +62,10 @@ console.log(re.info("Custom config loaded!"));
 ## API Sneak Peek
 
 ```ts
-import { re, colorize, rgb } from "@reliverse/relico";
+import { re, rgb } from "@reliverse/relico";
 
 console.log(re.red("Red!"));
 console.log(re.bold(re.green("Bold green")));
-console.log(colorize("magenta", "Hello!"));
 
 console.log(rgb(250, 128, 114)("This is salmon"));
 ```

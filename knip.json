@@ -1,11 +1,12 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
-  "project": ["**/*.{ts,js}"],
+  "project": [
+    "**/*.{ts,js}"
+  ],
   "entry": [
     ".*/**/*.ts",
     "*.{config,cfg}.{ts,js}",
-    "src/mod.ts",
-    "src/**/*-mod.ts"
+    "src/mod.ts"
   ],
   "ignore": [
     "node_modules",
@@ -14,5 +15,7 @@
     "dist-libs",
     "tests/mod.test.ts"
   ],
-  "ignoreBinaries": ["dler"]
+  "ignoreBinaries": [
+    "dler"
+  ]
 }

@@ -137,9 +137,7 @@ type RestrictedKeys =
 type OverridableColorKeys = Exclude<DefaultColorKeys, RestrictedKeys>;
 
 /** A map of user-overridable color definitions (no format keys) */
-export type OverridableColorMap = Partial<
-  Record<OverridableColorKeys, ColorDefinition>
->;
+export type OverridableColorMap = Partial<Record<OverridableColorKeys, ColorDefinition>>;
 
 /**
  * `relico.config.ts` configuration options.
@@ -176,12 +174,9 @@ export type RelicoConfig = {
  * Environment-based color detection
  * ------------------------------------------------------------------ */
 const argv: string[] = typeof process === "undefined" ? [] : process.argv;
-const isDisabled: boolean =
-  Boolean(env.NO_COLOR) || argv.includes("--no-color");
+const isDisabled: boolean = Boolean(env.NO_COLOR) || argv.includes("--no-color");
 const isForced: boolean = Boolean(env.FORCE_COLOR) || argv.includes("--color");
-const isCI = Boolean(
-  env.CI && (env.GITHUB_ACTIONS || env.GITLAB_CI || env.CIRCLECI),
-);
+const isCI = Boolean(env.CI && (env.GITHUB_ACTIONS || env.GITLAB_CI || env.CIRCLECI));
 
 // Also detect additional CI systems
 const isOtherCI = Boolean(
@@ -194,9 +189,7 @@ const isOtherCI = Boolean(
 );
 
 const isCompatibleTerminal: boolean =
-  typeof process !== "undefined" &&
-  Boolean(process.stdout?.isTTY) &&
-  env.TERM !== "dumb";
+  typeof process !== "undefined" && Boolean(process.stdout?.isTTY) && env.TERM !== "dumb";
 
 const colorterm: string = (env.COLORTERM ?? "").toLowerCase();
 const term: string = (env.TERM ?? "").toLowerCase();
@@ -566,10 +559,7 @@ function hexToRGB(hex: string): RGB {
 /**
  * Converts a hex color string into a 24-bit truecolor ANSI escape sequence.
  */
-function hexToAnsiParts(
-  hex: string,
-  isBg = false,
-): { open: string; close: string } {
+function hexToAnsiParts(hex: string, isBg = false): { open: string; close: string } {
   // Check cache first
   const cacheKey = `${hex}:${isBg}:truecolor`;
   const cached = colorConversionCache.get(cacheKey);
@@ -680,9 +670,7 @@ function hexToAnsiBasic(hex: string, isBg = false): string {
   if (colorDistances.has(distanceKey)) {
     distances =
       colorDistances.get(distanceKey) ??
-      shouldNeverHappen(
-        "Relico expected to use a color cache, but it's missing.",
-      );
+      shouldNeverHappen("Relico expected to use a color cache, but it's missing.");
   } else {
     // Calculate distances for all basic colors
     distances = basicColors.map((color) => {
@@ -802,10 +790,7 @@ function buildColorMap(cfg: RelicoConfig): Record<string, ColorArray> {
 /**
  * Creates a color formatter function that wraps text with open and close ANSI codes.
  */
-function createFormatter(
-  open: string,
-  close: string,
-): (input: string | number) => string {
+function createFormatter(open: string, close: string): (input: string | number) => string {
   if (!open && !close) {
     return identityColor;
   }
@@ -979,9 +964,7 @@ function initColorFunctions(): void {
     if (formatterCache.has(cacheKey)) {
       colorFunctions[key] =
         formatterCache.get(cacheKey) ??
-        shouldNeverHappen(
-          "Relico expected to use a formatter cache, but it's missing.",
-        );
+        shouldNeverHappen("Relico expected to use a formatter cache, but it's missing.");
     } else {
       const formatter = createFormatter(open, close);
       formatterCache.set(cacheKey, formatter);
@@ -1026,10 +1009,7 @@ export function configure(userInput: unknown): void {
   // Only update fields that are present and valid
   const newConfig: RelicoConfig = { ...config };
 
-  if (
-    typeof input.colorLevel === "number" &&
-    [0, 1, 2, 3].includes(input.colorLevel)
-  ) {
+  if (typeof input.colorLevel === "number" && [0, 1, 2, 3].includes(input.colorLevel)) {
     newConfig.colorLevel = input.colorLevel;
   } else if (input.autoDetect === true) {
     // Re-detect color level if auto-detection is enabled
@@ -1053,8 +1033,7 @@ export function configure(userInput: unknown): void {
   if (
     config.colorLevel !== newConfig.colorLevel ||
     config.theme !== newConfig.theme ||
-    JSON.stringify(config.customColors) !==
-      JSON.stringify(newConfig.customColors)
+    JSON.stringify(config.customColors) !== JSON.stringify(newConfig.customColors)
   ) {
     config = newConfig;
     rebuild();
@@ -1067,16 +1046,16 @@ export function configure(userInput: unknown): void {
  * Returns a color function by name (or `reset` or identity if not found).
  * Uses cached functions for better performance.
  */
-export function getColor(name: string): (text: string | number) => string {
-  return colorFunctions[name] || colorFunctions.reset || identityColor;
-}
+// export function getColor(name: string): (text: string | number) => string {
+// 	return colorFunctions[name] || colorFunctions.reset || identityColor;
+// }
 
 /**
  * Colorizes text with a color function.
  */
-export function colorize(name: string, text: string | number): string {
-  return getColor(name)(text);
-}
+// export function colorize(name: string, text: string | number): string {
+//   return getColor(name)(text);
+// }
 
 /**
  * Sets the color level (0=none, 1=basic, 2=256, 3=truecolor).
@@ -1094,11 +1073,7 @@ export function setColorLevel(level: 0 | 1 | 2 | 3): void {
  * @param g Green component (0-255)
  * @param b Blue component (0-255)
  */
-export function rgb(
-  r: number,
-  g: number,
-  b: number,
-): (text: string | number) => string {
+export function rgb(r: number, g: number, b: number): (text: string | number) => string {
   // Normalize and clamp RGB values
   const nr = Math.max(0, Math.min(255, Math.round(r)));
   const ng = Math.max(0, Math.min(255, Math.round(g)));
@@ -1158,11 +1133,7 @@ export function rgb(
  * @param g Green component (0-255)
  * @param b Blue component (0-255)
  */
-export function bgRgb(
-  r: number,
-  g: number,
-  b: number,
-): (text: string | number) => string {
+export function bgRgb(r: number, g: number, b: number): (text: string | number) => string {
   // Normalize and clamp RGB values
   const nr = Math.max(0, Math.min(255, Math.round(r)));
   const ng = Math.max(0, Math.min(255, Math.round(g)));
@@ -1327,11 +1298,7 @@ function hslToRgb(h: number, s: number, l: number): RGB {
  * @param s Saturation (0-100)
  * @param l Lightness (0-100)
  */
-export function hsl(
-  h: number,
-  s: number,
-  l: number,
-): (text: string | number) => string {
+export function hsl(h: number, s: number, l: number): (text: string | number) => string {
   // Check for disabled colors
   if (config.colorLevel === 0) {
     return identityColor;
@@ -1354,11 +1321,7 @@ export function hsl(
  * @param s Saturation (0-100)
  * @param l Lightness (0-100)
  */
-export function bgHsl(
-  h: number,
-  s: number,
-  l: number,
-): (text: string | number) => string {
+export function bgHsl(h: number, s: number, l: number): (text: string | number) => string {
   // Check for disabled colors
   if (config.colorLevel === 0) {
     return identityColor;
@@ -1391,9 +1354,7 @@ export function chain(
 
   // Create a unique cache key based on formatters
   const cacheKey = `chain:${formatters
-    .map(
-      (f) => f.name || formatterCache.entries().next().value?.[0] || "custom",
-    )
+    .map((f) => f.name || formatterCache.entries().next().value?.[0] || "custom")
     .join(",")}`;
 
   // Check cache first
@@ -1504,9 +1465,7 @@ export function multiGradient(
   const distribution = options?.distribution ?? "even";
 
   // Convert all colors to normalized RGB objects
-  const rgbColors: RGB[] = colors.map((color) =>
-    hexToRGB(normalizeColor(color)),
-  );
+  const rgbColors: RGB[] = colors.map((color) => hexToRGB(normalizeColor(color)));
 
   let result = "";
 
@@ -1517,8 +1476,7 @@ export function multiGradient(
 
     if (distribution === "weighted") {
       // Weighted distribution - more emphasis on colors at the ends
-      gradientPos =
-        (chars.length > 1 ? i / (chars.length - 1) : 0) ** smoothing;
+      gradientPos = (chars.length > 1 ? i / (chars.length - 1) : 0) ** smoothing;
     } else {
       // Even distribution - linear gradient
       gradientPos = chars.length > 1 ? i / (chars.length - 1) : 0;
@@ -1535,15 +1493,9 @@ export function multiGradient(
     const endColor = rgbColors[segmentIndex + 1];
 
     // Interpolate between the colors
-    const r = Math.round(
-      startColor.r + segmentOffset * (endColor.r - startColor.r),
-    );
-    const g = Math.round(
-      startColor.g + segmentOffset * (endColor.g - startColor.g),
-    );
-    const b = Math.round(
-      startColor.b + segmentOffset * (endColor.b - startColor.b),
-    );
+    const r = Math.round(startColor.r + segmentOffset * (endColor.r - startColor.r));
+    const g = Math.round(startColor.g + segmentOffset * (endColor.g - startColor.g));
+    const b = Math.round(startColor.b + segmentOffset * (endColor.b - startColor.b));
 
     // Apply color to character
     const colorFn = rgb(r, g, b);
@@ -1592,9 +1544,7 @@ export function blend(
   if (ratio === 0) return hex(color1);
   if (ratio === 1) return hex(color2);
 
-  const cacheKey = `blend:${normalizeColor(color1)}:${normalizeColor(
-    color2,
-  )}:${ratio.toFixed(3)}`;
+  const cacheKey = `blend:${normalizeColor(color1)}:${normalizeColor(color2)}:${ratio.toFixed(3)}`;
   if (formatterCache.has(cacheKey)) {
     return formatterCache.get(cacheKey);
   }
@@ -1661,8 +1611,7 @@ export function checkContrast(
 
   // Calculate contrast ratio
   const ratio =
-    (Math.max(fgLuminance, bgLuminance) + 0.05) /
-    (Math.min(fgLuminance, bgLuminance) + 0.05);
+    (Math.max(fgLuminance, bgLuminance) + 0.05) / (Math.min(fgLuminance, bgLuminance) + 0.05);
 
   // Round to 2 decimal places
   const roundedRatio = Math.round(ratio * 100) / 100;
@@ -2075,10 +2024,7 @@ export function colorizeJson(
   // Simple regex-based JSON syntax highlighting
   return json
     .replace(/"(\\.|[^"\\])*"(?=\s*:)/g, (match) => re.cyan(match))
-    .replace(
-      /:\s*"(\\.|[^"\\])*"/g,
-      (match) => `: ${re.green(match.slice(match.indexOf('"')))}`,
-    )
+    .replace(/:\s*"(\\.|[^"\\])*"/g, (match) => `: ${re.green(match.slice(match.indexOf('"')))}`)
     .replace(
       /:\s*\b(true|false|null)\b/g,
       (match) => `: ${re.yellow(match.slice(match.indexOf(":") + 1))}`,

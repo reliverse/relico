@@ -1,14 +1,6 @@
 import { beforeEach, describe, expect, test } from "bun:test";
 
-import {
-  colorSupport,
-  colorize,
-  configure,
-  getColor,
-  re,
-  rgb,
-  setColorLevel,
-} from "../src/mod.js";
+import { colorSupport, configure, re, rgb, setColorLevel } from "../src/mod.js";
 
 describe("relico", () => {
   // Reset color level before each test
@@ -46,29 +38,6 @@ describe("relico", () => {
       setColorLevel(3);
       expect(re.red("test")).not.toBe("test");
       expect(re.blue("test")).not.toBe("test");
-    });
-  });
-
-  describe("colorize function", () => {
-    test("colorize works with valid color names", () => {
-      expect(colorize("red", "test")).toBe(re.red("test"));
-      expect(colorize("blue", "test")).toBe(re.blue("test"));
-    });
-
-    test("colorize falls back to reset for invalid colors", () => {
-      expect(colorize("invalidColor", "test")).toBe(re.reset("test"));
-    });
-  });
-
-  describe("getColor function", () => {
-    test("getColor returns color function for valid names", () => {
-      const redFn = getColor("red");
-      expect(redFn("test")).toBe(re.red("test"));
-    });
-
-    test("getColor returns reset function for invalid names", () => {
-      const invalidFn = getColor("invalidColor");
-      expect(invalidFn("test")).toBe(re.reset("test"));
     });
   });
 

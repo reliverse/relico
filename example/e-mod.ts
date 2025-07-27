@@ -2,8 +2,6 @@
 
 import {
   colorSupport,
-  colorize,
-  getColor,
   initUserConfig,
   re,
   rgb,
@@ -43,17 +41,11 @@ async function initConfigAndPrintInfo() {
   console.log("✅ @reliverse/relico user config initialized successfully.");
 
   // Print remaining color support information
-  console.log(
-    re.green(`Colors Supported: ${String(colorSupport.isColorSupported)}`),
-  );
+  console.log(re.green(`Colors Supported: ${String(colorSupport.isColorSupported)}`));
   console.log(re.yellow(`Colors Forced: ${String(colorSupport.isForced)}`));
   console.log(re.red(`Colors Disabled: ${String(colorSupport.isDisabled)}`));
   console.log();
-  console.log(
-    re.red(
-      "This text should be displayed in red (using hex-to-ANSI conversion)!",
-    ),
-  );
+  console.log(re.red("This text should be displayed in red (using hex-to-ANSI conversion)!"));
 }
 
 async function printGradients() {
@@ -66,9 +58,7 @@ async function printAvailableColors() {
 
   const skipColors: DefaultColorKeys[] = ["hidden"];
   console.log("\nAVAILABLE COLORS\n================");
-  const filteredColors = defaultColorKeys.filter(
-    (colorKey) => !skipColors.includes(colorKey),
-  );
+  const filteredColors = defaultColorKeys.filter((colorKey) => !skipColors.includes(colorKey));
 
   if (eachOnNewLine) {
     for (const colorKey of filteredColors) {
@@ -126,18 +116,20 @@ async function printAdditionalInfo() {
   console.log();
 
   // Using colorize function
-  console.log("Using colorize():");
-  console.log(colorize("magenta", "This is magenta using colorize()"));
-  console.log(colorize("cyan", "This is cyan using colorize()"));
-  console.log();
+  // TODO: ensure it works correctly and really makes sense
+  // console.log("Using colorize():");
+  // console.log(colorize("magenta", "This is magenta using colorize()"));
+  // console.log(colorize("cyan", "This is cyan using colorize()"));
+  // console.log();
 
   // Using getColor function
-  console.log("Using getColor():");
-  const redColor = getColor("red");
-  const blueColor = getColor("blue");
-  console.log(redColor("This is red using getColor()"));
-  console.log(blueColor("This is blue using getColor()"));
-  console.log();
+  // TODO: ensure it works correctly and really makes sense
+  // console.log("Using getColor():");
+  // const redColor = getColor("red");
+  // const blueColor = getColor("blue");
+  // console.log(redColor("This is red using getColor()"));
+  // console.log(blueColor("This is blue using getColor()"));
+  // console.log();
 
   // Custom RGB colors (requires level 3 support)
   console.log("Custom RGB Colors (requires level 3 support):");
@@ -180,13 +172,7 @@ async function _printSafeColors() {
     console.log(safeBlueBg("This text also has a safe blue background"));
   }
   // Usage with both background and foreground colors
-  console.log(
-    safeColor(
-      "navy",
-      "white",
-      "White text on navy background that wraps safely",
-    ),
-  );
+  console.log(safeColor("navy", "white", "White text on navy background that wraps safely"));
 }
 
 await main();
