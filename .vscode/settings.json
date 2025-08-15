@@ -1,22 +1,45 @@
 {
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
-    "quickfix.biome": "explicit",
-    "source.addMissingImports": "never",
-    "source.fixAll.eslint": "explicit",
+    "source.addMissingImports.ts": "never",
+    "source.biome": "explicit",
+    "source.fixAll.biome": "explicit",
+    "source.fixAll.ts": "never",
+    "source.organizeImports.biome": "explicit",
     "source.organizeImports": "never",
-    "source.removeUnused": "never"
+    "source.removeUnused.ts": "never",
+    "source.removeUnusedImports": "never",
+    "source.sortImports": "never"
   },
-  "eslint.rules.customizations": [
-    {
-      "rule": "perfectionist/sort-imports",
-      "severity": "off"
-    }
-  ],
-  "openMultipleFiles.limit": 700,
+  "editor.defaultFormatter": "biomejs.biome",
+  "[typescript]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[markdown]": {
+    "editor.defaultFormatter": "DavidAnson.vscode-markdownlint"
+  },
   "markdownlint.config": {
-    "MD033": false
+    "MD033": false,
+    "MD024": false
   },
-  "typescript.tsdk": "node_modules\\typescript\\lib",
-  "eslint.ignoreUntitled": true
+  "json.schemaDownload.enable": true,
+  "css.lint.unknownAtRules": "ignore",
+  "emmet.showExpandedAbbreviation": "never",
+  "typescript.preferences.importModuleSpecifier": "shortest",
+  "typescript.updateImportsOnFileMove.enabled": "never",
+  "javascript.updateImportsOnFileMove.enabled": "never",
+  "typescript.updateImportsOnPaste.enabled": false,
+  "javascript.updateImportsOnPaste.enabled": false
 }

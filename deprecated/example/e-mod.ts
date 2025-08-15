@@ -2,17 +2,17 @@
 
 import {
   colorSupport,
+  type DefaultColorKeys,
+  defaultColorKeys,
+  gradient,
   initUserConfig,
+  rainbow,
   re,
   rgb,
-  setColorLevel,
-  defaultColorKeys,
   safeBg,
   safeColor,
-  type DefaultColorKeys,
-  rainbow,
-  gradient,
-} from "~/mod.js";
+  setColorLevel,
+} from "../src/mod";
 
 async function main() {
   // Init config and print setup info

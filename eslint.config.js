@@ -1,10 +1,10 @@
 // @ts-check
 
+import { fileURLToPath } from "node:url";
 import eslint from "@eslint/js";
 import stylistic from "@stylistic/eslint-plugin";
 import noRelativeImportPaths from "eslint-plugin-no-relative-import-paths";
 import perfectionist from "eslint-plugin-perfectionist";
-import { fileURLToPath } from "node:url";
 import path from "pathe";
 import tseslint from "typescript-eslint";
 

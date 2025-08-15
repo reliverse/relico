@@ -4,20 +4,20 @@
 
 [sponsor](https://github.com/sponsors/blefnk) — [discord](https://discord.gg/Pb8uKbwpsJ) — [repo](https://github.com/reliverse/relico) — [npm](https://npmjs.com/@reliverse/relico)
 
-## 🌟 Why Relico?
+## Why Relico?
 
-Because terminal styling shouldn’t feel like duct tape. **Relico** brings design-system-level polish to your CLI logs, banners, errors, and output — without battling your runtime, shell, or platform. Terminal styling should be *fun*, not frustrating. Relico makes it feel *right*.
+Because terminal styling shouldn't feel like duct tape. **Relico** brings design-system-level polish to your CLI logs, banners, errors, and output — without battling your runtime, shell, or platform. Terminal styling should be *fun*, not frustrating. Relico makes it feel *right*.
 
+- ⚡ **Blazing-fast & lightweight** — type-safe, runtime-safe, build-time aware, zero bloat, zero dependencies, zero configuration
 - 🎨 **80+ built-in colors** — easily customize or override with your own [`HEX`](https://chatgpt.com/share/67fd24cd-e7b0-8008-a815-f33d01f33758) palette
 - 🧩 **Themeable by default** — end-users can configure themes+typography+colors via `relico.config.ts`, developers via `await initUserConfig({ ... })`
 - 🌈 **Smart color detection** — full support for truecolor (16M), 256-color, and fallback modes across environments
 - 🦄 **A modern alternative** to `chalk`, `kleur`, `colorette`, `gradient-string`, and legacy console hacks
 - 🧠 **Typed, chainable, DX-optimized** — with autocompletion, inline docs, and expressive API ergonomics
 - 🌿 **Respects your environment** — including `NO_COLOR`, `FORCE_COLOR`, and terminal capabilities
-- ⚡ **Blazing-fast & lightweight** — zero bloat, runtime-safe, build-time aware, minimal dependencies
 - 🛡️ **Cross-platform & runtime-ready** — works everywhere — even when your users' terminals are weird — in Node.js, Bun, Deno, CI, Windows, macOS, Linux, Docker & more
 - 🎯 **Precision-crafted ANSI output** — every color, reset, and style code is finely tuned for contrast, legibility, and glitch-free rendering — even in flaky terminals (as far as Node.js permits)
-- 🦾 **Relico isn’t just about color** — it’s about communication — make your CLI users' output more than readable — make it feel *intentional*.
+- 🦾 **Relico isn't just about color** — it's about communication — make your CLI users' output more than readable — make it feel *intentional*.
 
 <img src="./example/example.png" width="50%" alt="Available Relico colors" />
 
@@ -27,6 +27,64 @@ Because terminal styling shouldn’t feel like duct tape. **Relico** brings desi
 bun add @reliverse/relico
 # bun • pnpm • yarn • npm
 ```
+
+## Performance
+
+```bash
+$ bun bench
+$ bun examples/benchmarks/performance.ts
+
+🚀 Relico Performance Benchmarks
+==================================================
+C:/B/R/reliverse/relico/dist-npm/bin/mod.js
+
+Basic color access: 107.02ms (934 379 ops/sec)
+Chained colors: 191.49ms (522 227 ops/sec)
+RGB color creation: 73.79ms (1 355 276 ops/sec)
+Hex color creation: 87.73ms (1 139 866 ops/sec)
+HSL color creation: 78.10ms (1 280 444 ops/sec)
+Chain function: 226.13ms (442 219 ops/sec)
+Background colors: 208.55ms (479 492 ops/sec)
+Bright colors: 124.96ms (800 282 ops/sec)
+Pastel colors: 126.03ms (793 446 ops/sec)
+Multiline text (small): 165.08ms (605 769 ops/sec)
+Multiline text (large): 1089.44ms (91 790 ops/sec)
+
+Bundle Size Test:
+Core exports imported: 5
+```
+
+```bash
+$ bun size
+$ bun examples/benchmarks/bundle-size.ts
+
+📦 Bundle Size Analysis
+==============================
+C:/B/R/reliverse/relico/dist-npm/bin/mod.js
+
+Size:
+- File size: 12.9KB
+- Declaration file size: 2.9KB
+- Total bundle size: 15.8KB
+
+Breakdown:
+- Color data: 554B (4.2%)
+- Logic: 12.4KB (95.8%)
+```
+
+## 🔥 Important Notice
+
+Relico (v1.3.0+) was recently rewritten from scratch:
+
+- To have zero dependencies and zero configuration
+- Include only the really necessary for daily usage features
+- To be as fast as possible
+
+Some missing important features may be added back in the coming future.
+
+This means everything or most of the things described below in this readme may be different now.
+
+The readme will be updated soon.
 
 ## Configuration
 
@@ -119,7 +177,7 @@ const brandColors: DefaultColorKeys[] = ["magentaBright", "maroon"];
 
 ## Color Detection
 
-Relico detects your terminal’s capability:
+Relico detects your terminal's capability:
 
 ```ts
 import { colorSupport } from "@reliverse/relico";
@@ -293,7 +351,7 @@ Relico draws inspiration from all — and goes beyond them with modern configs, 
 
 ## 🛠 Contributing
 
-We’d love your help! Bug? Feature? Example? PR it!  
+We'd love your help! Bug? Feature? Example? PR it!  
 Or hop into [Discord](https://discord.gg/Pb8uKbwpsJ) to discuss CLI theming and terminal art 💜
 
 ```bash

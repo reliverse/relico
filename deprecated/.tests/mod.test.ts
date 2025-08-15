@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, test } from "bun:test";
 
-import { colorSupport, configure, re, rgb, setColorLevel } from "../src/mod.js";
+import { colorSupport, configure, re, rgb, setColorLevel } from "../src/mod";
 
 describe("relico", () => {
   // Reset color level before each test
