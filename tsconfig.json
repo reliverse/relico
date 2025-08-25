@@ -1,20 +1,14 @@
 {
   "compilerOptions": {
     "paths": {
-      "~/*": [
-        "./src/*"
-      ],
-      "@/*": [
-        "example/*"
-      ]
+      "~/*": ["./src/*"],
+      "@/*": ["example/*"]
     },
     "baseUrl": ".",
     "esModuleInterop": true,
     "skipLibCheck": true,
     "target": "ESNext",
-    "lib": [
-      "ESNext"
-    ],
+    "lib": ["ESNext"],
     "allowJs": true,
     "resolveJsonModule": true,
     "moduleDetection": "force",
@@ -34,14 +28,6 @@
     "noUnusedParameters": false,
     "strictNullChecks": false
   },
-  "include": [
-    ".*/**/*.ts",
-    "**/*.ts",
-    "**/*.js",
-    ".config/**/*.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist*"
-  ]
+  "include": ["src/**/*.ts", "reliverse.ts", "reltypes.ts"],
+  "exclude": ["node_modules", "dist*"]
 }

@@ -8,6 +8,14 @@ import { config, getEnabledDirs, getFilePaths, getImportPath } from "./config";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+// Constants for size formatting
+const BYTES_PER_KB = 1024;
+const BYTES_PER_MB = 1024 * 1024;
+const NEWLINE_LENGTH = 1;
+const PERCENT_MULTIPLIER = 100;
+const DECIMAL_PLACES = 1;
+const SEPARATOR_LENGTH = 60;
+
 function getFileSize(path: string): number {
   try {
     const stats = statSync(path);
@@ -18,132 +26,108 @@ function getFileSize(path: string): number {
 }
 
 function formatSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes}B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)}KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)}MB`;
+  if (bytes < BYTES_PER_KB) {
+    return `${bytes}B`;
+  }
+  if (bytes < BYTES_PER_MB) {
+    return `${(bytes / BYTES_PER_KB).toFixed(DECIMAL_PLACES)}KB`;
+  }
+  return `${(bytes / BYTES_PER_MB).toFixed(DECIMAL_PLACES)}MB`;
 }
 
-function analyzeFile(filePath: string): { types: number; colorData: number; logic: number } {
+function analyzeFile(filePath: string): { types: number; constants: number; logic: number } {
   try {
     const sourceCode = readFileSync(filePath, "utf8");
     const lines = sourceCode.split("\n");
 
     let typeDefinitions = 0;
-    let colorData = 0;
+    let constants = 0;
     let logic = 0;
-
-    let inTypeBlock = false;
-    let inColorBlock = false;
 
     for (const line of lines) {
       const trimmed = line.trim();
 
       // Type definitions
-      if (trimmed.includes("type ") || trimmed.includes("interface ") || inTypeBlock) {
-        if (trimmed.includes("{") && !trimmed.includes("}")) inTypeBlock = true;
-        if (trimmed.includes("}") && inTypeBlock) inTypeBlock = false;
-        typeDefinitions += line.length + 1; // +1 for newline
+      if (trimmed.includes("type ") || trimmed.includes("interface ")) {
+        typeDefinitions += line.length + NEWLINE_LENGTH;
         continue;
       }
 
-      // Color data
-      if (trimmed.includes("COLORS") || trimmed.includes("HEX") || inColorBlock) {
-        if (trimmed.includes("{") && !trimmed.includes("}")) inColorBlock = true;
-        if (trimmed.includes("}") && inColorBlock) inColorBlock = false;
-        colorData += line.length + 1;
+      // Constants and color data
+      if (
+        trimmed.includes("const ") ||
+        trimmed.includes("COLOR_LEVEL") ||
+        trimmed.includes("SGR_")
+      ) {
+        constants += line.length + NEWLINE_LENGTH;
         continue;
       }
 
       // Everything else is logic
       if (trimmed.length > 0) {
-        logic += line.length + 1;
+        logic += line.length + NEWLINE_LENGTH;
       }
     }
 
-    return { types: typeDefinitions, colorData, logic };
+    return { types: typeDefinitions, constants, logic };
   } catch (error) {
     console.warn(`⚠️  Could not analyze ${filePath}:`, error);
-    return { types: 0, colorData: 0, logic: 0 };
+    return { types: 0, constants: 0, logic: 0 };
   }
 }
 
-async function analyzeAllDirectories() {
+function analyzeSingleDirectory(dir: "src" | "distNpmBin"): void {
+  const importPath = getImportPath(dir);
+  const filePaths = getFilePaths(dir);
+
+  console.log(`\n🔍 Analyzing ${dir.toUpperCase()} directory: ${importPath}`);
+  console.log("=".repeat(SEPARATOR_LENGTH));
+
+  // Analyze JavaScript/TypeScript file
+  if (filePaths.js) {
+    const jsFilePath = resolve(__dirname, filePaths.js);
+    console.log(`📄 JavaScript/TypeScript file: ${filePaths.js}`);
+    console.log(`Resolved path: ${jsFilePath}`);
+
+    const jsFileSize = getFileSize(jsFilePath);
+    if (jsFileSize === 0) {
+      console.log(`❌ File not found or empty: ${jsFilePath}`);
+    } else {
+      console.log(`File size: ${formatSize(jsFileSize)}`);
+
+      const jsAnalysis = analyzeFile(jsFilePath);
+
+      console.log("\nBreakdown:");
+      console.log(
+        `- Types: ${formatSize(jsAnalysis.types)} (${((jsAnalysis.types / jsFileSize) * PERCENT_MULTIPLIER).toFixed(DECIMAL_PLACES)}%)`,
+      );
+      console.log(
+        `- Constants: ${formatSize(jsAnalysis.constants)} (${((jsAnalysis.constants / jsFileSize) * PERCENT_MULTIPLIER).toFixed(DECIMAL_PLACES)}%)`,
+      );
+      console.log(
+        `- Logic: ${formatSize(jsAnalysis.logic)} (${((jsAnalysis.logic / jsFileSize) * PERCENT_MULTIPLIER).toFixed(DECIMAL_PLACES)}%)`,
+      );
+
+      if (config.bundleAnalysis.analyzeDependencies) {
+        console.log("\n📊 Additional Info:");
+        try {
+          const sourceCode = readFileSync(jsFilePath, "utf8");
+          const lines = sourceCode.split("\n");
+          console.log(`- Total lines: ${lines.length}`);
+          console.log("- File type: TypeScript");
+        } catch (error) {
+          console.log(`- Could not read file for line count: ${error}`);
+        }
+      }
+    }
+  }
+}
+
+function analyzeAllDirectories(): void {
   const enabledDirs = getEnabledDirs();
 
   for (const dir of enabledDirs) {
-    const importPath = getImportPath(dir);
-    const filePaths = getFilePaths(dir);
-
-    console.log(`\n🔍 Analyzing ${dir.toUpperCase()} directory: ${importPath}`);
-    console.log("=".repeat(60));
-
-    // Analyze JavaScript/TypeScript file
-    if (filePaths.js) {
-      const jsFilePath = resolve(__dirname, filePaths.js);
-      console.log(`📄 JavaScript/TypeScript file: ${filePaths.js}`);
-      console.log(`Resolved path: ${jsFilePath}`);
-
-      const jsFileSize = getFileSize(jsFilePath);
-      if (jsFileSize === 0) {
-        console.log(`❌ File not found or empty: ${jsFilePath}`);
-      } else {
-        console.log(`File size: ${formatSize(jsFileSize)}`);
-
-        const jsAnalysis = analyzeFile(jsFilePath);
-
-        console.log(`\nBreakdown:`);
-        console.log(
-          `- Types: ${formatSize(jsAnalysis.types)} (${((jsAnalysis.types / jsFileSize) * 100).toFixed(1)}%)`,
-        );
-        console.log(
-          `- Color data: ${formatSize(jsAnalysis.colorData)} (${((jsAnalysis.colorData / jsFileSize) * 100).toFixed(1)}%)`,
-        );
-        console.log(
-          `- Logic: ${formatSize(jsAnalysis.logic)} (${((jsAnalysis.logic / jsFileSize) * 100).toFixed(1)}%)`,
-        );
-
-        if (config.bundleAnalysis.analyzeDependencies) {
-          console.log(`\n📊 Additional Info:`);
-          try {
-            const sourceCode = readFileSync(jsFilePath, "utf8");
-            const lines = sourceCode.split("\n");
-            console.log(`- Total lines: ${lines.length}`);
-            console.log(
-              `- File type: ${filePaths.js.endsWith(".ts") ? "TypeScript" : "JavaScript"}`,
-            );
-          } catch (error) {
-            console.log(`- Could not read file for line count: ${error}`);
-          }
-        }
-      }
-    }
-
-    // Analyze TypeScript declaration file if it exists
-    if (filePaths.dts) {
-      const dtsFilePath = resolve(__dirname, filePaths.dts);
-      console.log(`\n📄 TypeScript declarations: ${filePaths.dts}`);
-      console.log(`Resolved path: ${dtsFilePath}`);
-
-      const dtsFileSize = getFileSize(dtsFilePath);
-      if (dtsFileSize === 0) {
-        console.log(`❌ Declaration file not found: ${dtsFilePath}`);
-      } else {
-        console.log(`Declaration file size: ${formatSize(dtsFileSize)}`);
-
-        if (config.bundleAnalysis.analyzeDependencies) {
-          try {
-            const sourceCode = readFileSync(dtsFilePath, "utf8");
-            const lines = sourceCode.split("\n");
-            console.log(`- Declaration lines: ${lines.length}`);
-            console.log(
-              `- Total bundle size: ${formatSize(dtsFileSize + (filePaths.js ? getFileSize(resolve(__dirname, filePaths.js)) : 0))}`,
-            );
-          } catch (error) {
-            console.log(`- Could not read declaration file: ${error}`);
-          }
-        }
-      }
-    }
+    analyzeSingleDirectory(dir);
   }
 }
 
@@ -152,11 +136,8 @@ console.log("📦 Relico Bundle Size Analysis");
 console.log("=".repeat(50));
 
 console.log("Starting analysis...");
-analyzeAllDirectories()
-  .then(() => {
-    console.log("\n✅ All analyses completed!");
-  })
-  .catch((error) => {
-    console.error("❌ Analysis error:", error);
-    console.error("Error details:", error);
-  });
+analyzeAllDirectories();
+console.log("\n✅ All analyses completed!");
+console.log("Starting analysis...");
+analyzeAllDirectories();
+console.log("\n✅ All analyses completed!");

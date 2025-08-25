@@ -1,13 +1,144 @@
-// ==========================================================================
-// Dler & Relinka Types
-// ==========================================================================
-
+// reliverse.ts types version is 2025-08-24
 /**
  * Defines the configuration for building and publishing packages. This includes: versioning,
  * build settings, publishing options, libraries-dler-plugin built-in plugin, and more.
  * It customizes the build and publish pipeline for both NPM and JSR registries.
  */
-export interface DlerConfig {
+export interface ReliverseConfig {
+  $schema: string;
+  projectName: string;
+  projectAuthor: string;
+  projectDescription: string;
+  version: string;
+  projectLicense: string;
+  // ==========================================================================
+  // Project configuration
+  // ==========================================================================
+  projectState?: string;
+  projectRepository?: string;
+  projectDomain?: string;
+  projectCategory?: string;
+  projectSubcategory?: string;
+  projectTemplate?: string;
+  projectTemplateDate?: string;
+  projectArchitecture?: string;
+  repoPrivacy?: string;
+  projectGitService?: string;
+  projectDeployService?: string;
+  repoBranch?: string;
+  // Primary tech stack/framework
+  projectFramework?: string;
+  projectPackageManager?: string;
+  projectRuntime?: string;
+  preferredLibraries?: {
+    stateManagement?: string;
+    formManagement?: string;
+    styling?: string;
+    uiComponents?: string;
+    testing?: string;
+    authentication?: string;
+    databaseLibrary?: string;
+    databaseProvider?: string;
+    api?: string;
+    linting?: string;
+    formatting?: string;
+    payment?: string;
+    analytics?: string;
+    monitoring?: string;
+    logging?: string;
+    forms?: string;
+    notifications?: string;
+    search?: string;
+    uploads?: string;
+    validation?: string;
+    documentation?: string;
+    icons?: string;
+    mail?: string;
+    cache?: string;
+    storage?: string;
+    cdn?: string;
+    cms?: string;
+    i18n?: string;
+    seo?: string;
+    motion?: string;
+    charts?: string;
+    dates?: string;
+    markdown?: string;
+    security?: string;
+    routing?: string;
+  };
+  monorepo?: {
+    type?: string;
+    packages?: string[];
+    sharedPackages?: string[];
+  };
+  // List dependencies to exclude from checks
+  ignoreDependencies?: string[];
+  // Provide custom rules for Reliverse AI
+  customRules?: Record<string, any>;
+  // Project features
+  features?: {
+    i18n?: boolean;
+    analytics?: boolean;
+    themeMode?: string;
+    authentication?: boolean;
+    api?: boolean;
+    database?: boolean;
+    testing?: boolean;
+    docker?: boolean;
+    ci?: boolean;
+    commands?: string[];
+    webview?: string[];
+    language?: string[];
+    themes?: string[];
+  };
+  // Code style preferences
+  codeStyle?: {
+    dontRemoveComments?: boolean;
+    shouldAddComments?: boolean;
+    typeOrInterface?: string;
+    importOrRequire?: string;
+    quoteMark?: string;
+    semicolons?: boolean;
+    lineWidth?: number;
+    indentStyle?: string;
+    indentSize?: number;
+    importSymbol?: string;
+    trailingComma?: string;
+    bracketSpacing?: boolean;
+    arrowParens?: string;
+    tabWidth?: number;
+    jsToTs?: boolean;
+    cjsToEsm?: boolean;
+    modernize?: {
+      replaceFs?: boolean;
+      replacePath?: boolean;
+      replaceHttp?: boolean;
+      replaceProcess?: boolean;
+      replaceConsole?: boolean;
+      replaceEvents?: boolean;
+    };
+  };
+  // Settings for cloning an existing repo
+  multipleRepoCloneMode?: boolean;
+  customUserFocusedRepos?: string[];
+  customDevsFocusedRepos?: string[];
+  hideRepoSuggestions?: boolean;
+  customReposOnNewProject?: boolean;
+  // Set to false to disable opening the browser during env composing
+  envComposerOpenBrowser?: boolean;
+  // Enable auto-answering for prompts to skip manual confirmations.
+  skipPromptsUseAutoBehavior?: boolean;
+  // Prompt behavior for deployment
+  deployBehavior?: string;
+  depsBehavior?: string;
+  gitBehavior?: string;
+  i18nBehavior?: string;
+  scriptsBehavior?: string;
+  // Behavior for existing GitHub repos during project creation
+  existingRepoBehavior?: string;
+  // Behavior for Reliverse AI chat and agent mode
+  relinterConfirm?: string;
   // ==========================================================================
   // Bump configuration
   // ==========================================================================
@@ -18,7 +149,6 @@ export interface DlerConfig {
    * @default false
    */
   bumpDisable: boolean;
-
   /**
    * Controls which files will have their version numbers updated during version bumping.
    *
@@ -30,10 +160,9 @@ export interface DlerConfig {
    * When empty, falls back to only updating "package.json".
    * Respects: .gitignore patterns, hidden files, .git & node_modules.
    *
-   * @default ["package.json", ".config/rse.ts"]
+   * @default ["package.json", "reliverse.ts"]
    */
   bumpFilter: string[];
-
   /**
    * Specifies how the version number should be incremented:
    * - `patch`: Increments the patch version for backwards-compatible bug fixes (1.2.3 → 1.2.4)
@@ -47,7 +176,6 @@ export interface DlerConfig {
    * @default "patch"
    */
   bumpMode: BumpMode;
-
   /**
    * Custom version to set when bumpMode is "manual".
    * Must be a valid semver version (e.g., "1.2.3").
@@ -55,11 +183,9 @@ export interface DlerConfig {
    * @default ""
    */
   bumpSet: string;
-
   // ==========================================================================
   // Common configuration
   // ==========================================================================
-
   /**
    * When `true`, stops after building and retains distribution folders.
    * Useful for development or inspecting the build output.
@@ -67,7 +193,6 @@ export interface DlerConfig {
    * @default true
    */
   commonPubPause: boolean;
-
   /**
    * Specifies which package registries to publish to:
    * - `npm`: Publish only to the NPM commonPubRegistry.
@@ -77,7 +202,6 @@ export interface DlerConfig {
    * @default "npm"
    */
   commonPubRegistry: "jsr" | "npm" | "npm-jsr";
-
   /**
    * When `true`, enables detailed logs during the build and publish process.
    * Useful for debugging or understanding the build flow.
@@ -85,7 +209,6 @@ export interface DlerConfig {
    * @default false
    */
   commonVerbose: boolean;
-
   /**
    * When `true`, displays detailed build and publish logs.
    * When `false`, only shows spinner with status messages during build and publish.
@@ -93,11 +216,9 @@ export interface DlerConfig {
    * @default true
    */
   displayBuildPubLogs: boolean;
-
   // ==========================================================================
   // Core configuration
   // ==========================================================================
-
   /**
    * When `true`, generates TypeScript declaration files (.d.ts) for NPM packages.
    * Essential for providing type intranspileFormation to TypeScript users.
@@ -108,7 +229,6 @@ export interface DlerConfig {
    * @default true
    */
   coreDeclarations: boolean;
-
   /**
    * Path to the project's main entry file.
    * Used as the entry point for the NPM package.
@@ -116,7 +236,6 @@ export interface DlerConfig {
    * @default "mod.ts"
    */
   coreEntryFile: string;
-
   /**
    * Base directory containing the source entry files.
    * All paths are resolved relative to this directory.
@@ -125,7 +244,6 @@ export interface DlerConfig {
    * @default "src"
    */
   coreEntrySrcDir: string;
-
   /**
    * Directory where built files will be placed within the distribution directory.
    * For example, if set to "bin", CLI scripts will be placed in "dist-npm/bin" or "dist-jsr/bin".
@@ -133,7 +251,6 @@ export interface DlerConfig {
    * @default "bin"
    */
   coreBuildOutDir: string;
-
   /**
    * Configuration for CLI functionality:
    * - enabled: When `true`, indicates that the package has CLI capabilities
@@ -158,7 +275,6 @@ export interface DlerConfig {
     enabled: boolean;
     scripts: Record<string, string>;
   };
-
   /**
    * Optional description that overrides the description from package.json.
    * When provided, this description will be used in the dist's package.json.
@@ -167,11 +283,9 @@ export interface DlerConfig {
    * @default `package.json`'s "description"
    */
   coreDescription: string;
-
   // ==========================================================================
   // JSR-only config
   // ==========================================================================
-
   /**
    * When `true`, allows JSR publishing even with uncommitted changes.
    * Use with caution, as it may lead to inconsistent published versions.
@@ -181,7 +295,6 @@ export interface DlerConfig {
    * @default true
    */
   distJsrAllowDirty: boolean;
-
   /**
    * The bundler to use for creating JSR-compatible packages.
    * JSR's native bundler is recommended for best compatibility.
@@ -189,7 +302,6 @@ export interface DlerConfig {
    * @default "jsr"
    */
   distJsrBuilder: BundlerName;
-
   /**
    * Directory where JSR build artifacts are generated.
    * This directory will contain the package ready for JSR publishing.
@@ -197,7 +309,6 @@ export interface DlerConfig {
    * @default "dist-jsr"
    */
   distJsrDirName: string;
-
   /**
    * When `true`, simulates the publishing process without actually publishing.
    * Useful for testing the build and publish pipeline without side effects.
@@ -205,7 +316,6 @@ export interface DlerConfig {
    * @default false
    */
   distJsrDryRun: boolean;
-
   /**
    * When `true`, fails the build if warnings are detected.
    * Use with caution, as it may lead to inconsistent published versions.
@@ -213,21 +323,18 @@ export interface DlerConfig {
    * @default false
    */
   distJsrFailOnWarn: boolean;
-
   /**
    * When `true`, generates a `jsconfig.json` file for JSR's dist.
    *
    * @default false
    */
   distJsrGenTsconfig: boolean;
-
   /**
    * The file extension for output files in JSR packages.
    *
    * @default "ts"
    */
   distJsrOutFilesExt: NpmOutExt;
-
   /**
    * When `true`, enables JSR to process complex types, which may impact performance.
    * Enable this only if you cannot simplify or explicitly define exported types.
@@ -246,18 +353,15 @@ export interface DlerConfig {
    * @default true
    */
   distJsrSlowTypes: boolean;
-
   // ==========================================================================
   // NPM-only config
   // ==========================================================================
-
   /**
    * The bundler to use for creating NPM-compatible packages.
    *
    * @default "mkdist"
    */
   distNpmBuilder: BundlerName;
-
   /**
    * Directory where NPM build artifacts are generated.
    * This directory will contain the package ready for NPM publishing.
@@ -265,7 +369,6 @@ export interface DlerConfig {
    * @default "dist-npm"
    */
   distNpmDirName: string;
-
   /**
    * Specifies the file extension for output files in NPM packages.
    * Determines the extension of compiled files in the NPM distribution.
@@ -274,11 +377,9 @@ export interface DlerConfig {
    * @default "js"
    */
   distNpmOutFilesExt: NpmOutExt;
-
   // ==========================================================================
   // Libraries Dler Plugin
   // ==========================================================================
-
   /**
    * !! EXPERIMENTAL !!
    * Controls which parts of the project are built and published:
@@ -289,21 +390,18 @@ export interface DlerConfig {
    * @default "main-project-only"
    */
   libsActMode: "libs-only" | "main-and-libs" | "main-project-only";
-
   /**
    * The directory where built libraries are stored before publishing.
    *
    * @default "dist-libs"
    */
   libsDirDist: string;
-
   /**
    * The directory containing library source files.
    *
    * @default "src/libs"
    */
   libsDirSrc: string;
-
   /**
    * !! EXPERIMENTAL !!
    * Configuration for building and publishing multiple libraries.
@@ -317,29 +415,24 @@ export interface DlerConfig {
    * }
    */
   libsList: Record<string, LibConfig>;
-
   // ==========================================================================
   // Logger setup
   // ==========================================================================
-
   /**
    * The name of the log file. dler uses `@reliverse/relinka` for logging.
    *
    * @default ".logs/relinka.log"
    */
   logsFileName: string;
-
   /**
    * When `true`, cleans up the log file from previous runs.
    *
    * @default false
    */
   logsFreshFile: boolean;
-
   // ==========================================================================
   // Dependency filtering
   // ==========================================================================
-
   /**
    * Configuration for dependency removal/injection patterns.
    * Controls which dependencies are excluded from (or injected into) the final package.
@@ -381,11 +474,9 @@ export interface DlerConfig {
       }
     >;
   };
-
   // ==========================================================================
   // Code quality tools
   // ==========================================================================
-
   /**
    * List of tools to run before the build process starts.
    * Available options: "tsc", "eslint", "biome", "knip", "dler-check"
@@ -394,7 +485,6 @@ export interface DlerConfig {
    * @default []
    */
   runBeforeBuild: ("tsc" | "eslint" | "biome" | "knip" | "dler-check")[];
-
   /**
    * List of tools to run after the build process completes.
    * Available options: "dler-check"
@@ -403,11 +493,9 @@ export interface DlerConfig {
    * @default []
    */
   runAfterBuild: "dler-check"[];
-
   // ==========================================================================
   // Build hooks
   // ==========================================================================
-
   /**
    * Array of functions to be executed before the build process starts.
    * These hooks will be called in sequence before any build steps.
@@ -429,7 +517,6 @@ export interface DlerConfig {
    * @default []
    */
   hooksBeforeBuild: (() => Promise<void>)[];
-
   /**
    * Array of functions to be executed after the build process completes.
    * These hooks will be called in sequence after all build steps.
@@ -451,7 +538,6 @@ export interface DlerConfig {
    * @default []
    */
   hooksAfterBuild: (() => Promise<void>)[];
-
   /**
    * When `true`, cleans up the temporary directories after the build process completes.
    *
@@ -460,11 +546,9 @@ export interface DlerConfig {
   postBuildSettings: {
     deleteDistTmpAfterBuild: boolean;
   };
-
   // ==========================================================================
   // Build setup
   // ==========================================================================
-
   /**
    * When `true`, fails the build if warnings are detected.
    * Use with caution, as it may lead to inconsistent published versions.
@@ -472,14 +556,12 @@ export interface DlerConfig {
    * @default false
    */
   transpileFailOnWarn: boolean;
-
   /**
    * The transpileTarget runtime environment for the built package.
    *
    * @default "es2023"
    */
   transpileEsbuild: Esbuild;
-
   /**
    * Output module transpileFormat for built files:
    * - `esm`: ECMAScript modules (import/export)
@@ -489,7 +571,6 @@ export interface DlerConfig {
    * @default "esm"
    */
   transpileFormat: transpileFormat;
-
   /**
    * When `true`, minifies the output to reduce bundle size.
    * Recommended for production builds but may increase build time.
@@ -497,7 +578,6 @@ export interface DlerConfig {
    * @default true
    */
   transpileMinify: boolean;
-
   /**
    * The base URL for loading assets in the built package.
    * Important for packages that include assets like images or fonts.
@@ -505,7 +585,6 @@ export interface DlerConfig {
    * @default "/"
    */
   transpilePublicPath: string;
-
   /**
    * Controls source map generation for debugging (experimental):
    * - `true/false`: Enable/disable source maps.
@@ -517,7 +596,6 @@ export interface DlerConfig {
    * @default false
    */
   transpileSourcemap: Sourcemap;
-
   /**
    * When `true`, enables code transpileSplitting for improved load-time performance.
    * Useful for large applications but may not be needed for small projects.
@@ -525,14 +603,12 @@ export interface DlerConfig {
    * @default false
    */
   transpileSplitting: boolean;
-
   /**
    * Stub the package for JIT compilation.
    *
    * @default false
    */
   transpileStub: boolean;
-
   /**
    * Defines the transpileTarget runtime environment:
    * - `node`: Optimized for Node.js.
@@ -542,14 +618,12 @@ export interface DlerConfig {
    * @default "node"
    */
   transpileTarget: transpileTarget;
-
   /**
    * Watch the src dir and rebuild on change (experimental).
    *
    * @default false
    */
   transpileWatch: boolean;
-
   /**
    * Specifies what resources to send to npm and jsr registries.
    * coreBuildOutDir (e.g. "bin") dir is automatically included.
@@ -591,7 +665,6 @@ export interface DlerConfig {
       }
     >;
   };
-
   // Files with these extensions will be built
   // Any other files will be copied as-is to dist
   /**
@@ -601,7 +674,6 @@ export interface DlerConfig {
    * @default ["ts", "js"]
    */
   buildPreExtensions: string[];
-
   // If you need to exclude some ts/js files from being built,
   // you can store them in the dirs with buildTemplatesDir name
   /**
@@ -610,11 +682,9 @@ export interface DlerConfig {
    * @default "templates"
    */
   buildTemplatesDir: string;
-
   // ==========================================================================
   // Relinka Logger Configuration
   // ==========================================================================
-
   /**
    * Integrated relinka logger configuration.
    * @see https://github.com/reliverse/relinka
@@ -622,10 +692,38 @@ export interface DlerConfig {
    * @default See DEFAULT_RELINKA_CONFIG in defaults
    */
   relinka: RelinkaConfig;
+  // ==========================================================================
+  // Remdn Configuration
+  // ==========================================================================
+  /**
+   * Configuration for the remdn command which generates directory comparison documentation.
+   * Controls how files are compared and documented across different distribution directories.
+   */
+  remdn?: {
+    /**
+     * Title for the generated documentation.
+     * @default "Directory Comparison"
+     */
+    title?: string;
+    /**
+     * Output path for the generated HTML file.
+     * @default "docs/files.html"
+     */
+    output?: string;
+    /**
+     * Configuration for directories to compare.
+     * Each key represents a directory path, and its value contains directory-specific settings.
+     */
+    dirs?: Record<string, Record<string, never>>;
+    /**
+     * Extension mapping for file comparison.
+     * Maps source file extensions to their corresponding extensions in different distribution directories.
+     * Format: [<main>, <dist-npm/bin | dist-libs's * npm/bin>, <dist-jsr | dist-libs's * jsr/bin>]
+     */
+    "ext-map"?: Record<string, string[]>;
+  };
 }
-
 export type BumpMode = "patch" | "minor" | "major" | "auto" | "manual";
-
 /**
  * Supported bundler names for building packages:
  * - bun: Bun's built-in bundler for fast builds
@@ -636,9 +734,7 @@ export type BumpMode = "patch" | "minor" | "major" | "auto" | "manual";
  * - untyped: Types and markdown generation from a config object
  */
 export type BundlerName = "bun" | "copy" | "jsr" | "mkdist" | "rollup" | "untyped";
-
 export type NpmOutExt = "cjs" | "cts" | "js" | "mjs" | "mts" | "ts";
-
 /**
  * Configuration for a library to be built and published as a separate package.
  * Used when publishing multiple packages from a single repository.
@@ -648,7 +744,6 @@ export interface LibConfig {
    * When `true`, generates TypeScript declaration files (.d.ts) for NPM packages.
    */
   libDeclarations: boolean;
-
   /**
    * An optional description of the library, included in the dist's package.json.
    * Provides users with an overview of the library's purpose.
@@ -659,14 +754,12 @@ export interface LibConfig {
    * @default `package.json`'s "description"
    */
   libDescription: string;
-
   /**
    * The directory where the library's dist files are stored.
    *
    * @default name is derived from the library's name after slash
    */
   libDirName: string;
-
   /**
    * The path to the library's main entry file.
    * This file serves as the primary entry point for imports.
@@ -678,7 +771,6 @@ export interface LibConfig {
    * @example "src/libs/my-lib-3/index.js"
    */
   libMainFile: string;
-
   /**
    * Dependencies to include in the dist's package.json.
    * The final output may vary based on `filterDepsPatterns`.
@@ -691,7 +783,6 @@ export interface LibConfig {
    * @example true - Include all `dependencies` from the main package.json.
    */
   libPkgKeepDeps: boolean | string[];
-
   /**
    * When `true`, minifies the output to reduce bundle size.
    * Recommended for production builds but may increase build time.
@@ -699,7 +790,6 @@ export interface LibConfig {
    * @default true
    */
   libTranspileMinify: boolean;
-
   /**
    * When true, pauses publishing for this specific library (overridden by commonPubPause).
    * If true, this library will be built but not published, even if other libs are published.
@@ -707,14 +797,12 @@ export interface LibConfig {
    * @default false
    */
   libPubPause?: boolean;
-
   /**
    * The registry to publish the library to.
    *
    * @default "npm"
    */
   libPubRegistry?: "jsr" | "npm" | "npm-jsr";
-
   /**
    * Optional version override for the library.
    * If not provided, falls back to the version from the main package.json.
@@ -723,9 +811,7 @@ export interface LibConfig {
    */
   version?: string;
 }
-
 export type Esbuild = "es2019" | "es2020" | "es2021" | "es2022" | "es2023";
-
 /**
  * Supported output module transpileFormats for built packages.
  * - esm: ECMAScript modules (import/export)
@@ -733,7 +819,6 @@ export type Esbuild = "es2019" | "es2020" | "es2021" | "es2022" | "es2023";
  * - iife: Immediately Invoked Function Expression (for browsers)
  */
 export type transpileFormat = "cjs" | "esm" | "iife";
-
 /**
  * Supported source map options for built packages.
  * - boolean: Enable/disable source maps.
@@ -743,7 +828,6 @@ export type transpileFormat = "cjs" | "esm" | "iife";
  * - "external": Generate separate source map files.
  */
 export type Sourcemap = "external" | "inline" | "linked" | "none" | boolean;
-
 /**
  * Supported transpileTarget runtime environments for built packages.
  * - node: Optimized for Node.js.
@@ -751,12 +835,10 @@ export type Sourcemap = "external" | "inline" | "linked" | "none" | boolean;
  * - browser: Optimized for web browsers.
  */
 export type transpileTarget = "browser" | "bun" | "node";
-
 /** Configuration for directory-related settings. */
 export type RelinkaDirsConfig = {
   maxLogFiles?: number;
 };
-
 /** Log level types used by the logger. */
 export type LogLevel =
   | "error"
@@ -771,7 +853,6 @@ export type LogLevel =
   | "step"
   | "box"
   | "message";
-
 /** Configuration for a single log level. */
 export type LogLevelConfig = {
   /**
@@ -779,26 +860,21 @@ export type LogLevelConfig = {
    * @see https://symbl.cc
    */
   symbol: string;
-
   /**
    * Fallback symbol to use if Unicode is not supported.
    */
   fallbackSymbol: string;
-
   /**
    * Color to use for this log level.
    */
   color: string;
-
   /**
    * Number of spaces after the symbol/fallback
    */
   spacing?: number;
 };
-
 /** Configuration for all log levels. */
 export type LogLevelsConfig = Partial<Record<LogLevel, LogLevelConfig>>;
-
 /**
  * Configuration options for the Relinka logger.
  * All properties are optional to allow for partial configuration.
@@ -812,18 +888,15 @@ export type RelinkaConfig = {
    * has been awaited for user's config via `@reliverse/relinka`'s `await relinkaConfig;`
    */
   verbose?: boolean;
-
   /**
    * Configuration for directory-related settings.
    * - `maxLogFiles`: The maximum number of log files to keep before cleanup.
    */
   dirs?: RelinkaDirsConfig;
-
   /**
    * Disables color output in the console.
    */
   disableColors?: boolean;
-
   /**
    * Configuration for log file output.
    */
@@ -845,12 +918,10 @@ export type RelinkaConfig = {
      */
     freshLogFile?: boolean;
   };
-
   /**
    * If true, logs will be saved to a file.
    */
   saveLogsToFile?: boolean;
-
   /**
    * Configuration for timestamp in log messages.
    */
@@ -864,37 +935,38 @@ export type RelinkaConfig = {
      */
     format?: string;
   };
-
   /**
    * Allows to customize the log levels.
    */
   levels?: LogLevelsConfig;
-
   /**
    * Controls how often the log cleanup runs (in milliseconds)
    * Default: 10000 (10 seconds)
    */
   cleanupInterval?: number;
-
   /**
    * Maximum size of the log write buffer before flushing to disk (in bytes)
    * Default: 4096 (4KB)
    */
   bufferSize?: number;
-
   /**
    * Maximum time to hold logs in buffer before flushing to disk (in milliseconds)
    * Default: 5000 (5 seconds)
    */
   maxBufferAge?: number;
 };
-
 /**
  * Default configuration for the build and publish logic.
  */
-export const DEFAULT_CONFIG_DLER: DlerConfig = {
+export const DEFAULT_CONFIG_RELIVERSE: ReliverseConfig = {
+  $schema: "./schema.json",
+  projectName: "",
+  projectAuthor: "",
+  projectDescription: "",
+  version: "",
+  projectLicense: "",
   bumpDisable: false,
-  bumpFilter: ["package.json", ".config/rse.ts"],
+  bumpFilter: ["package.json", "reliverse.ts"],
   bumpMode: "patch",
   bumpSet: "",
   commonPubPause: true,
@@ -924,7 +996,6 @@ export const DEFAULT_CONFIG_DLER: DlerConfig = {
   libsList: {},
   logsFileName: ".logs/relinka.log",
   logsFreshFile: true,
-
   // Dependency filtering
   filterDepsPatterns: {
     global: ["@types", "biome", "eslint", "knip", "prettier", "typescript", "@reliverse/dler"],
@@ -932,11 +1003,9 @@ export const DEFAULT_CONFIG_DLER: DlerConfig = {
     "dist-jsr": [],
     "dist-libs": {},
   },
-
   // Code quality tools
   runBeforeBuild: [], // tsc, eslint, biome, knip, dler-check
   runAfterBuild: [], // dler-check
-
   // Build hooks
   hooksBeforeBuild: [
     // async () => {
@@ -948,11 +1017,9 @@ export const DEFAULT_CONFIG_DLER: DlerConfig = {
     //   await someAsyncOperation();
     // }
   ],
-
   postBuildSettings: {
     deleteDistTmpAfterBuild: true,
   },
-
   // Build setup
   transpileFailOnWarn: false,
   transpileEsbuild: "es2023",
@@ -964,7 +1031,6 @@ export const DEFAULT_CONFIG_DLER: DlerConfig = {
   transpileStub: false,
   transpileTarget: "node",
   transpileWatch: false,
-
   // Publish artifacts configuration
   publishArtifacts: {
     global: ["package.json", "README.md", "LICENSE"],
@@ -972,14 +1038,12 @@ export const DEFAULT_CONFIG_DLER: DlerConfig = {
     "dist-npm": [],
     "dist-libs": {},
   },
-
   // Files with these extensions will be built
   // Any other files will be copied as-is to dist
   buildPreExtensions: ["ts", "js"],
   // If you need to exclude some ts/js files from being built,
   // you can store them in the dirs with buildTemplatesDir name
   buildTemplatesDir: "templates",
-
   // Integrated relinka logger configuration
   relinka: {
     verbose: false,
@@ -997,7 +1061,7 @@ export const DEFAULT_CONFIG_DLER: DlerConfig = {
       enabled: false,
       format: "HH:mm:ss",
     },
-    cleanupInterval: 10000, // 10 seconds
+    cleanupInterval: 10_000, // 10 seconds
     bufferSize: 4096, // 4KB
     maxBufferAge: 5000, // 5 seconds
     levels: {
@@ -1052,15 +1116,21 @@ export const DEFAULT_CONFIG_DLER: DlerConfig = {
       },
     },
   },
+  // Remdn Configuration
+  remdn: {
+    title: "Directory Comparison",
+    output: "docs/files.html",
+    dirs: {
+      src: {},
+      "dist-npm/bin": {},
+      "dist-jsr/bin": {},
+      "dist-libs/sdk/npm/bin": {},
+    },
+    "ext-map": {
+      ts: ["ts", "js-d.ts", "ts"], // [<main>, <dist-npm/bin | dist-libs's * npm/bin>, <dist-jsr | dist-libs's * jsr/bin>]
+    },
+  },
 };
-
-// TODO: implement migrator from build.config.ts to .config/dler.ts
-// export function defineBuildConfig(
-//   config: UnifiedBuildConfig | UnifiedBuildConfig[],
-// ): UnifiedBuildConfig[] {
-//   return (Array.isArray(config) ? config : [config]).filter(Boolean);
-// }
-
-export const defineConfig = (userConfig: Partial<DlerConfig> = {}) => {
-  return { ...DEFAULT_CONFIG_DLER, ...userConfig };
+export const defineConfig = (userConfig: Partial<ReliverseConfig> = {}) => {
+  return { ...DEFAULT_CONFIG_RELIVERSE, ...userConfig };
 };

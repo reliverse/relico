@@ -5,6 +5,12 @@ import { performance } from "perf_hooks";
 import { fileURLToPath } from "url";
 import { config, getEnabledDirs, getImportPath } from "./config";
 
+// Constants
+const MILLISECONDS_PER_SECOND = 1000;
+const COLOR_LEVEL_BASIC = 1;
+const COLOR_LEVEL_TRUECOLOR = 3;
+const MULTILINE_TEST_SIZE = 50;
+
 // Get the directory where this benchmark file is located
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -22,9 +28,15 @@ async function importFromDir(dir: string) {
   }
 }
 
+interface ModuleExports {
+  re: any;
+  chain: any;
+  setColorLevel: (level: number) => void;
+}
+
 // Run benchmarks for a specific module
-async function runBenchmarks(dir: string, module: any) {
-  const { re, rgb, hex, hsl, chain } = module;
+function runBenchmarks(module: ModuleExports) {
+  const { re, chain, setColorLevel } = module;
   const { iterations, warmupRuns } = config.performance;
 
   function benchmark(name: string, fn: () => void, iterCount = iterations) {
@@ -39,7 +51,7 @@ async function runBenchmarks(dir: string, module: any) {
     }
     const end = performance.now();
     const time = end - start;
-    const opsPerSec = Math.round((iterCount * 1000) / time);
+    const opsPerSec = Math.round((iterCount * MILLISECONDS_PER_SECOND) / time);
     console.log(`  ${name}: ${time.toFixed(2)}ms (${opsPerSec.toLocaleString()} ops/sec)`);
   }
 
@@ -52,16 +64,12 @@ async function runBenchmarks(dir: string, module: any) {
     re.bold.red.underline("test");
   });
 
-  benchmark("RGB color creation", () => {
-    rgb(255, 0, 0)("test");
+  benchmark("Extended named colors", () => {
+    re.orange("test");
   });
 
-  benchmark("Hex color creation", () => {
-    hex("#ff0000")("test");
-  });
-
-  benchmark("HSL color creation", () => {
-    hsl(0, 100, 50)("test");
+  benchmark("Bright color variants", () => {
+    re.redBright("test");
   });
 
   benchmark("Chain function", () => {
@@ -72,12 +80,22 @@ async function runBenchmarks(dir: string, module: any) {
     re.bgRed.white("test");
   });
 
-  benchmark("Bright colors", () => {
-    re.redBright("test");
+  benchmark("Bright background colors", () => {
+    re.bgRedBright.white("test");
   });
 
-  benchmark("Pastel colors", () => {
-    re.redPastel("test");
+  benchmark("Complex style combinations", () => {
+    re.bold.italic.underline.red("test");
+  });
+
+  benchmark("Style methods", () => {
+    re.dim.strikethrough("test");
+  });
+
+  benchmark("Color level changes", () => {
+    setColorLevel(COLOR_LEVEL_BASIC);
+    re.red("test");
+    setColorLevel(COLOR_LEVEL_TRUECOLOR); // Reset to truecolor
   });
 
   benchmark("Multiline text (small)", () => {
@@ -85,12 +103,41 @@ async function runBenchmarks(dir: string, module: any) {
   });
 
   benchmark("Multiline text (large)", () => {
-    const largeText = Array(50).fill("text").join("\n");
+    const largeText = new Array(MULTILINE_TEST_SIZE).fill("text").join("\n");
     re.red(largeText);
   });
 
-  console.log(`\n  📊 Bundle Size Test:`);
-  console.log(`  Core exports imported: ${Object.keys({ re, rgb, hex, hsl, chain }).length}`);
+  benchmark("Mixed background and foreground", () => {
+    re.bgBlue.yellow.bold("test");
+  });
+
+  benchmark("All basic colors iteration", () => {
+    const colors = ["red", "green", "blue", "yellow", "magenta", "cyan", "white", "black"];
+    for (const color of colors) {
+      re[color]("test");
+    }
+  });
+
+  benchmark("Extended colors iteration", () => {
+    const extendedColors = [
+      "orange",
+      "pink",
+      "purple",
+      "teal",
+      "lime",
+      "brown",
+      "navy",
+      "maroon",
+      "olive",
+      "silver",
+    ];
+    for (const color of extendedColors) {
+      re[color]("test");
+    }
+  });
+
+  console.log("\n  📊 Bundle Size Test:");
+  console.log(`  Core exports imported: ${Object.keys({ re, chain, setColorLevel }).length}`);
 }
 
 // Test all enabled directories
@@ -103,10 +150,12 @@ async function runBenchmarksForAllDirs() {
     console.log("=".repeat(60));
 
     const module = await importFromDir(importPath);
-    if (!module) continue;
+    if (!module) {
+      continue;
+    }
 
     // Run benchmarks for this directory
-    await runBenchmarks(dir, module);
+    runBenchmarks(module);
   }
 }
 

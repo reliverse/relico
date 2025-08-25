@@ -14,7 +14,7 @@ export const customConfig: BenchmarkConfig = {
   enabledDirs: ["src", "distNpmBin"], // Only test src and dist-npm/bin
 
   performance: {
-    iterations: 50000, // Reduce iterations for faster testing
+    iterations: 50_000, // Reduce iterations for faster testing
     warmupRuns: 500, // Reduce warmup runs
   },
 
@@ -40,8 +40,8 @@ export const builtOnlyConfig: BenchmarkConfig = {
 export const highPerfConfig: BenchmarkConfig = {
   ...customConfig,
   performance: {
-    iterations: 1000000, // 1M iterations for accurate results
-    warmupRuns: 10000, // 10K warmup runs
+    iterations: 1_000_000, // 1M iterations for accurate results
+    warmupRuns: 10_000, // 10K warmup runs
   },
 };
 
@@ -49,7 +49,7 @@ export const highPerfConfig: BenchmarkConfig = {
 export const quickConfig: BenchmarkConfig = {
   ...customConfig,
   performance: {
-    iterations: 10000, // 10K iterations for quick results
+    iterations: 10_000, // 10K iterations for quick results
     warmupRuns: 100, // Minimal warmup
   },
 };

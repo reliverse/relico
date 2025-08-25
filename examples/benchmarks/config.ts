@@ -7,8 +7,7 @@ export interface BenchmarkConfig {
   };
 
   // Which directories to include in testing
-  // enabledDirs: ("src" | "distNpmBin")[];
-  enabledDirs: "distNpmBin"[];
+  enabledDirs: ("src" | "distNpmBin")[];
 
   // Performance test settings
   performance: {
@@ -26,16 +25,15 @@ export interface BenchmarkConfig {
 // Default configuration
 export const defaultConfig: BenchmarkConfig = {
   sourceDirs: {
-    // src: "../../src",
+    src: "../../src",
     distNpmBin: "../../dist-npm/bin", // Binary distribution (where .js and .d.ts files are)
   },
 
-  // Test all directories by default
-  // enabledDirs: ["src", "distNpmBin"],
-  enabledDirs: ["distNpmBin"],
+  // Test source directory by default since we don't have a built version
+  enabledDirs: ["src"],
 
   performance: {
-    iterations: 100000,
+    iterations: 100_000,
     warmupRuns: 1000,
   },
 
@@ -51,8 +49,8 @@ export function getImportPath(dir: keyof BenchmarkConfig["sourceDirs"], module =
   const basePath = config.sourceDirs[dir];
 
   switch (dir) {
-    // case "src":
-    // return `${basePath}/${module}.ts`;
+    case "src":
+      return `${basePath}/${module}.ts`;
     case "distNpmBin":
       return `${basePath}/${module}.js`;
     default:
@@ -69,8 +67,8 @@ export function getFilePaths(
   const basePath = config.sourceDirs[dir];
 
   switch (dir) {
-    // case "src":
-    // return { js: `${basePath}/${module}.ts` };
+    case "src":
+      return { js: `${basePath}/${module}.ts` };
     case "distNpmBin":
       return {
         js: `${basePath}/${module}.js`,

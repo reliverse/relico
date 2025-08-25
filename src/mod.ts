@@ -1,14 +1,17 @@
 /* @reliverse/relico - Tiny, type-safe terminal color library with chainable API
    - Levels: 0 (off), 1 (ANSI 8/bright), 2 (ANSI 256), 3 (Truecolor)
    - Named palettes (std, web, grayscale), Bright & Pastel variants, bg-variants
-   - Formats: hex, rgb, hsl (+ bgHex/bgRgb/bgHsl)
    - Chainable: re.bold.red.underline("text"), chain(re.bold, re.red)("text")
    - Multiline-safe: styles applied per line with reset to prevent bleed
 */
 
 type ColorLevel = 0 | 1 | 2 | 3;
 
-type Rgb = { r: number; g: number; b: number };
+interface Rgb {
+  r: number;
+  g: number;
+  b: number;
+}
 
 type SgrOp =
   | { kind: "style"; open: number[] } // closed by global reset at line end
@@ -23,7 +26,7 @@ type ApplyInput = string | number;
 
 type FormatCallable = ((input: ApplyInput) => string) & { readonly [OP_SYMBOL]: SgrOp[] };
 
-type BaseColorName =
+export type BaseColorName =
   | "black"
   | "red"
   | "green"
@@ -44,20 +47,9 @@ type BaseColorName =
   | "olive"
   | "silver";
 
-type ColorName = BaseColorName | GrayScaleName | BrightColorName | PastelColorName | BgColorName;
+export type ColorName = BaseColorName | BrightColorName | BgColorName;
 
-type GrayScaleName =
-  | "gray10"
-  | "gray20"
-  | "gray30"
-  | "gray40"
-  | "gray50"
-  | "gray60"
-  | "gray70"
-  | "gray80"
-  | "gray90";
-
-type BrightColorName =
+export type BrightColorName =
   | "blackBright"
   | "redBright"
   | "greenBright"
@@ -77,34 +69,9 @@ type BrightColorName =
   | "oliveBright"
   | "silverBright";
 
-type PastelColorName =
-  | "blackPastel"
-  | "redPastel"
-  | "greenPastel"
-  | "yellowPastel"
-  | "bluePastel"
-  | "magentaPastel"
-  | "cyanPastel"
-  | "whitePastel"
-  | "grayPastel"
-  | "orangePastel"
-  | "pinkPastel"
-  | "purplePastel"
-  | "tealPastel"
-  | "limePastel"
-  | "brownPastel"
-  | "navyPastel"
-  | "maroonPastel"
-  | "olivePastel"
-  | "silverPastel";
+export type BgColorName = `bg${Capitalize<BaseColorName>}` | `bg${Capitalize<BrightColorName>}`;
 
-type BgColorName =
-  | `bg${Capitalize<BaseColorName>}`
-  | `bg${Capitalize<GrayScaleName>}`
-  | `bg${Capitalize<BrightColorName>}`
-  | `bg${Capitalize<PastelColorName>}`;
-
-type ReStyleKey =
+export type ReStyleKey =
   | "reset"
   | "bold"
   | "dim"
@@ -114,132 +81,101 @@ type ReStyleKey =
   | "hidden"
   | "strikethrough";
 
-type ReDynamicFnKey = "rgb" | "hex" | "hsl" | "bgRgb" | "bgHex" | "bgHsl";
-
-type ReKey = ReStyleKey | ColorName | ReDynamicFnKey;
-
-type MkRgbFn = (r: number, g: number, b: number) => Re;
-type MkHexFn = (hex: string) => Re;
-type MkHslFn = (h: number, s: number, l: number) => Re;
-
-type StyleKeys =
-  | "reset"
-  | "bold"
-  | "dim"
-  | "italic"
-  | "underline"
-  | "inverse"
-  | "hidden"
-  | "strikethrough";
-type DynamicKeys = "rgb" | "hex" | "hsl" | "bgRgb" | "bgHex" | "bgHsl";
-
-type Re = FormatCallable & {
-  readonly [K in StyleKeys]: Re;
+export type Re = FormatCallable & {
+  readonly [K in ReStyleKey]: Re;
 } & {
   readonly [K in ColorName]: Re;
 } & {
   readonly [K in BgColorName]: Re;
-} & {
-  readonly rgb: MkRgbFn;
-  readonly hex: MkHexFn;
-  readonly hsl: MkHslFn;
-  readonly bgRgb: MkRgbFn;
-  readonly bgHex: MkHexFn;
-  readonly bgHsl: MkHslFn;
 };
 
 const ESC = "\x1B[";
 const RESET = `${ESC}0m`;
 const OP_SYMBOL: unique symbol = Symbol("re.ops");
 
-let CURRENT_LEVEL: ColorLevel = 3;
+// Color level constants
+const COLOR_LEVEL_OFF = 0;
+const COLOR_LEVEL_BASIC = 1;
+const COLOR_LEVEL_256 = 2;
+const COLOR_LEVEL_TRUECOLOR = 3;
+
+// RGB and byte constants
+const MIN_BYTE = 0;
+const MAX_BYTE = 255;
+const WHITE_RGB = 255;
+
+// ANSI 256 color constants
+const ANSI_256_GRAYSCALE_MIN = 8;
+const ANSI_256_GRAYSCALE_MAX = 248;
+const ANSI_256_BASE_OFFSET = 16;
+const ANSI_256_GRAYSCALE_BASE = 232;
+const ANSI_256_GRAYSCALE_RANGE = 247;
+const ANSI_256_GRAYSCALE_STEPS = 24;
+const ANSI_256_BRIGHT_THRESHOLD = 231;
+const ANSI_256_RGB_LEVELS = 5;
+const ANSI_256_RGB_RED_MULTIPLIER = 36;
+const ANSI_256_RGB_GREEN_MULTIPLIER = 6;
+
+// SGR code constants
+const SGR_FG_BASE = 30;
+const SGR_BG_BASE = 40;
+const SGR_FG_BRIGHT_BASE = 90;
+const SGR_BG_BRIGHT_BASE = 100;
+
+// Style SGR codes
+const SGR_RESET = 0;
+const SGR_BOLD = 1;
+const SGR_DIM = 2;
+const SGR_ITALIC = 3;
+const SGR_UNDERLINE = 4;
+const SGR_INVERSE = 7;
+const SGR_HIDDEN = 8;
+const SGR_STRIKETHROUGH = 9;
+
+// Hex parsing constants
+const HEX_BYTE_LENGTH = 2;
+const HEX_RED_START = 0;
+const HEX_GREEN_START = 2;
+const HEX_BLUE_START = 4;
+const HEX_BLUE_END = 6;
+const HEX_RADIX = 16;
+
+// String processing constants
+const BRIGHT_SUFFIX_LENGTH = 6;
+const BG_PREFIX_LENGTH = 2;
+const BG_COLOR_START = 3;
+
+// Color mixing constants
+const BRIGHT_MIX_FACTOR = 0.25;
+
+// Regex constants
+const BRIGHT_SUFFIX_REGEX = /Bright$/u;
+
+let CURRENT_LEVEL: ColorLevel = COLOR_LEVEL_TRUECOLOR;
 
 export const setColorLevel = (level: ColorLevel): void => {
-  if (level !== 0 && level !== 1 && level !== 2 && level !== 3) {
+  if (
+    level !== COLOR_LEVEL_OFF &&
+    level !== COLOR_LEVEL_BASIC &&
+    level !== COLOR_LEVEL_256 &&
+    level !== COLOR_LEVEL_TRUECOLOR
+  ) {
     throw new Error("Invalid color level");
   }
   CURRENT_LEVEL = level;
 };
 
 const clampByte = (n: number): number => {
-  if (!Number.isFinite(n)) return 0;
-  if (n < 0) return 0;
-  if (n > 255) return 255;
+  if (!Number.isFinite(n)) {
+    return MIN_BYTE;
+  }
+  if (n < MIN_BYTE) {
+    return MIN_BYTE;
+  }
+  if (n > MAX_BYTE) {
+    return MAX_BYTE;
+  }
   return Math.round(n);
-};
-
-const clampPct = (n: number): number => {
-  if (!Number.isFinite(n)) return 0;
-  if (n < 0) return 0;
-  if (n > 100) return 100;
-  return n;
-};
-
-// hex regex with pre-compiled pattern
-const hexRe = /^#?([a-fA-F0-9]{3}|[a-fA-F0-9]{6})$/;
-
-// hex parser with small allocations
-const hexToRgb = (hex: string): Rgb | null => {
-  const len = hex.length;
-  const start = hex[0] === "#" ? 1 : 0;
-  const raw = hex.slice(start);
-  const rawLen = raw.length;
-
-  if (rawLen !== 3 && rawLen !== 6) return null;
-
-  // Validate hex characters without regex for better performance
-  for (let i = 0; i < rawLen; i++) {
-    const c = raw.charCodeAt(i);
-    if (!((c >= 48 && c <= 57) || (c >= 65 && c <= 70) || (c >= 97 && c <= 102))) {
-      return null;
-    }
-  }
-
-  if (rawLen === 3) {
-    const r = parseInt(raw[0] + raw[0], 16);
-    const g = parseInt(raw[1] + raw[1], 16);
-    const b = parseInt(raw[2] + raw[2], 16);
-    return { r, g, b };
-  }
-
-  return {
-    r: parseInt(raw.slice(0, 2), 16),
-    g: parseInt(raw.slice(2, 4), 16),
-    b: parseInt(raw.slice(4, 6), 16),
-  };
-};
-
-// Optimized HSL to RGB with fewer branches and calculations
-const hslToRgb = (h: number, s: number, l: number): Rgb => {
-  const H = ((h % 360) + 360) % 360;
-  const S = Math.min(100, Math.max(0, s)) / 100;
-  const L = Math.min(100, Math.max(0, l)) / 100;
-
-  if (S === 0) {
-    const v = Math.round(L * 255);
-    return { r: v, g: v, b: v };
-  }
-
-  const c = (1 - Math.abs(2 * L - 1)) * S;
-  const x = c * (1 - Math.abs(((H / 60) % 2) - 1));
-  const m = L - c / 2;
-
-  // index-based lookup
-  const sector = Math.floor(H / 60) % 6;
-  const rgbValues = [
-    [c, x, 0],
-    [x, c, 0],
-    [0, c, x],
-    [0, x, c],
-    [x, 0, c],
-    [c, 0, x],
-  ][sector];
-
-  return {
-    r: Math.round((rgbValues[0] + m) * 255),
-    g: Math.round((rgbValues[1] + m) * 255),
-    b: Math.round((rgbValues[2] + m) * 255),
-  };
 };
 
 // Base 8-color RGB anchors (non-bright)
@@ -279,19 +215,27 @@ const nearestBasicIndex = (rgb: Rgb): number => {
 const rgbToAnsi256 = (rgb: Rgb): number => {
   // Try grayscale if r≈g≈b
   if (rgb.r === rgb.g && rgb.g === rgb.b) {
-    if (rgb.r < 8) return 16;
-    if (rgb.r > 248) return 231;
-    const step = Math.round(((rgb.r - 8) / 247) * 24);
-    return 232 + step;
+    if (rgb.r < ANSI_256_GRAYSCALE_MIN) {
+      return ANSI_256_BASE_OFFSET;
+    }
+    if (rgb.r > ANSI_256_GRAYSCALE_MAX) {
+      return ANSI_256_BRIGHT_THRESHOLD;
+    }
+    const step = Math.round(
+      ((rgb.r - ANSI_256_GRAYSCALE_MIN) / ANSI_256_GRAYSCALE_RANGE) * ANSI_256_GRAYSCALE_STEPS,
+    );
+    return ANSI_256_GRAYSCALE_BASE + step;
   }
-  const r = Math.round((rgb.r / 255) * 5);
-  const g = Math.round((rgb.g / 255) * 5);
-  const b = Math.round((rgb.b / 255) * 5);
-  return 16 + 36 * r + 6 * g + b;
+  const r = Math.round((rgb.r / MAX_BYTE) * ANSI_256_RGB_LEVELS);
+  const g = Math.round((rgb.g / MAX_BYTE) * ANSI_256_RGB_LEVELS);
+  const b = Math.round((rgb.b / MAX_BYTE) * ANSI_256_RGB_LEVELS);
+  return (
+    ANSI_256_BASE_OFFSET + ANSI_256_RGB_RED_MULTIPLIER * r + ANSI_256_RGB_GREEN_MULTIPLIER * g + b
+  );
 };
 
 // Color data
-const CORE_COLORS: Record<string, string> = {
+const NAMED_COLORS: Record<BaseColorName, string> = {
   black: "#000000",
   red: "#ff0000",
   green: "#00ff00",
@@ -301,9 +245,6 @@ const CORE_COLORS: Record<string, string> = {
   cyan: "#00ffff",
   white: "#ffffff",
   gray: "#808080",
-};
-
-const EXTENDED_COLORS: Record<string, string> = {
   orange: "#ffa500",
   pink: "#ffc0cb",
   purple: "#800080",
@@ -316,89 +257,91 @@ const EXTENDED_COLORS: Record<string, string> = {
   silver: "#c0c0c0",
 };
 
-// Lazy-loaded combined colors
-let NAMED_HEX: Record<BaseColorName, string> | undefined;
-
-// Lazy loader for named colors
-const getNamedColors = (): Record<BaseColorName, string> => {
-  if (NAMED_HEX) return NAMED_HEX;
-  NAMED_HEX = { ...CORE_COLORS, ...EXTENDED_COLORS } as Record<BaseColorName, string>;
-  return NAMED_HEX;
-};
-
-// Optimized grayscale generation - computed at runtime
-let GRAYS: Record<GrayScaleName, string> | undefined;
-
-const getGrayColors = (): Record<GrayScaleName, string> => {
-  if (GRAYS) return GRAYS;
-  GRAYS = {} as Record<GrayScaleName, string>;
-  // Generate grays programmatically to reduce bundle size
-  for (let i = 1; i <= 9; i++) {
-    const value = Math.round(26 * i - 10); // 16, 42, 68, 94, 120, 146, 172, 198, 224
-    const hex = value.toString(16).padStart(2, "0");
-    const key = `gray${i}0` as GrayScaleName;
-    GRAYS[key] = `#${hex}${hex}${hex}`;
-  }
-  return GRAYS;
-};
-
 const mixWithWhite = (rgb: Rgb, factor: number): Rgb => {
   const t = factor;
   return {
-    r: clampByte(rgb.r * (1 - t) + 255 * t),
-    g: clampByte(rgb.g * (1 - t) + 255 * t),
-    b: clampByte(rgb.b * (1 - t) + 255 * t),
+    r: clampByte(rgb.r * (1 - t) + WHITE_RGB * t),
+    g: clampByte(rgb.g * (1 - t) + WHITE_RGB * t),
+    b: clampByte(rgb.b * (1 - t) + WHITE_RGB * t),
   };
 };
 
 const fromNamed = (name: BaseColorName): Rgb => {
-  const hex = getNamedColors()[name];
-  const rgb = hexToRgb(hex);
-  return rgb ?? { r: 255, g: 255, b: 255 };
+  const hex = NAMED_COLORS[name];
+  if (!hex || typeof hex !== "string") {
+    // Return black as fallback for invalid color names
+    return { r: 0, g: 0, b: 0 };
+  }
+  // Simple hex to RGB conversion for named colors only
+  const clean = hex.startsWith("#") ? hex.slice(1) : hex;
+  if (clean.length !== HEX_BLUE_END && clean.length !== 3) {
+    // Return black as fallback for invalid hex format
+    return { r: 0, g: 0, b: 0 };
+  }
+
+  let rHex: string, gHex: string, bHex: string;
+  if (clean.length === 3) {
+    // Expand short hex format (e.g., "abc" -> "aabbcc")
+    rHex = clean[0].repeat(2);
+    gHex = clean[1].repeat(2);
+    bHex = clean[2].repeat(2);
+  } else {
+    rHex = clean.slice(HEX_RED_START, HEX_BYTE_LENGTH);
+    gHex = clean.slice(HEX_GREEN_START, HEX_BLUE_START);
+    bHex = clean.slice(HEX_BLUE_START, HEX_BLUE_END);
+  }
+
+  const r = Number.parseInt(rHex, HEX_RADIX);
+  const g = Number.parseInt(gHex, HEX_RADIX);
+  const b = Number.parseInt(bHex, HEX_RADIX);
+
+  // Validate parsed RGB values
+  if (Number.isNaN(r) || Number.isNaN(g) || Number.isNaN(b)) {
+    return { r: 0, g: 0, b: 0 };
+  }
+
+  return { r, g, b };
 };
 
-const fromGrayName = (name: GrayScaleName): Rgb => {
-  const hex = getGrayColors()[name];
-  const rgb = hexToRgb(hex);
-  return rgb ?? { r: 128, g: 128, b: 128 };
-};
-
-const toBaseName = (compound: BrightColorName | PastelColorName): BaseColorName => {
-  const base = compound.replace(/(Bright|Pastel)$/u, "");
+const toBaseName = (compound: BrightColorName): BaseColorName => {
+  if (!compound || typeof compound !== "string") {
+    return "black"; // fallback for invalid input
+  }
+  const base = compound.replace(BRIGHT_SUFFIX_REGEX, "");
+  if (!base) {
+    return "black"; // fallback for empty result
+  }
   const key = base.charAt(0).toLowerCase() + base.slice(1);
-  // @ts-expect-error - key is safe by construction
-  return key;
+  return key as BaseColorName;
 };
 
 const parseColorName = (name: ColorName): { rgb: Rgb; wantBright: boolean } => {
-  if ((name as string).endsWith("Bright")) {
+  if (!name || typeof name !== "string") {
+    // Return black as fallback for invalid input
+    return { rgb: { r: 0, g: 0, b: 0 }, wantBright: false };
+  }
+
+  if (name.endsWith("Bright")) {
     const base = toBaseName(name as BrightColorName);
     const rgb = fromNamed(base);
     // Lighten a bit in high levels; level 1 will use bright SGR
-    const rgbAdj = mixWithWhite(rgb, 0.25);
+    const rgbAdj = mixWithWhite(rgb, BRIGHT_MIX_FACTOR);
     return { rgb: rgbAdj, wantBright: true };
-  }
-  if ((name as string).endsWith("Pastel")) {
-    const base = toBaseName(name as PastelColorName);
-    const rgb = fromNamed(base);
-    const rgbAdj = mixWithWhite(rgb, 0.6);
-    return { rgb: rgbAdj, wantBright: false };
-  }
-  if ((name as string).startsWith("gray")) {
-    return { rgb: fromGrayName(name as GrayScaleName), wantBright: false };
   }
   return { rgb: fromNamed(name as BaseColorName), wantBright: false };
 };
 
 const openForOp = (op: SgrOp): string => {
-  if (CURRENT_LEVEL === 0) return "";
+  if (CURRENT_LEVEL === COLOR_LEVEL_OFF) {
+    return "";
+  }
   switch (op.kind) {
     case "style":
       return sgr(op.open);
     case "fg-basic":
-      return sgr([(op.bright ? 90 : 30) + op.idx]);
+      return sgr([(op.bright ? SGR_FG_BRIGHT_BASE : SGR_FG_BASE) + op.idx]);
     case "bg-basic":
-      return sgr([(op.bright ? 100 : 40) + op.idx]);
+      return sgr([(op.bright ? SGR_BG_BRIGHT_BASE : SGR_BG_BASE) + op.idx]);
     case "fg-256":
       return `${ESC}38;5;${op.code}m`;
     case "bg-256":
@@ -407,20 +350,28 @@ const openForOp = (op: SgrOp): string => {
       return `${ESC}38;2;${op.rgb.r};${op.rgb.g};${op.rgb.b}m`;
     case "bg-true":
       return `${ESC}48;2;${op.rgb.r};${op.rgb.g};${op.rgb.b}m`;
+    default:
+      return "";
   }
 };
 
 const opsToOpen = (ops: SgrOp[]): string => {
-  if (CURRENT_LEVEL === 0) return "";
+  if (CURRENT_LEVEL === COLOR_LEVEL_OFF) {
+    return "";
+  }
   let out = "";
-  for (const op of ops) out += openForOp(op);
+  for (const op of ops) {
+    out += openForOp(op);
+  }
   return out;
 };
 
 // Optimized multiline processing with fewer allocations and branches
 const applyOpsToText = (ops: SgrOp[], input: ApplyInput): string => {
   const text = String(input);
-  if (CURRENT_LEVEL === 0 || ops.length === 0 || text.length === 0) return text;
+  if (CURRENT_LEVEL === COLOR_LEVEL_OFF || ops.length === 0 || text.length === 0) {
+    return text;
+  }
 
   const open = opsToOpen(ops);
 
@@ -447,22 +398,22 @@ const applyOpsToText = (ops: SgrOp[], input: ApplyInput): string => {
 
 // Build operations for a color request according to CURRENT_LEVEL
 const mkFgOpsFromRgb = (rgb: Rgb, wantBright = false): SgrOp[] => {
-  if (CURRENT_LEVEL === 1) {
+  if (CURRENT_LEVEL === COLOR_LEVEL_BASIC) {
     const idx = nearestBasicIndex(rgb);
     return [{ kind: "fg-basic", idx, bright: wantBright }];
   }
-  if (CURRENT_LEVEL === 2) {
+  if (CURRENT_LEVEL === COLOR_LEVEL_256) {
     return [{ kind: "fg-256", code: rgbToAnsi256(rgb) }];
   }
   return [{ kind: "fg-true", rgb }];
 };
 
 const mkBgOpsFromRgb = (rgb: Rgb, wantBright = false): SgrOp[] => {
-  if (CURRENT_LEVEL === 1) {
+  if (CURRENT_LEVEL === COLOR_LEVEL_BASIC) {
     const idx = nearestBasicIndex(rgb);
     return [{ kind: "bg-basic", idx, bright: wantBright }];
   }
-  if (CURRENT_LEVEL === 2) {
+  if (CURRENT_LEVEL === COLOR_LEVEL_256) {
     return [{ kind: "bg-256", code: rgbToAnsi256(rgb) }];
   }
   return [{ kind: "bg-true", rgb }];
@@ -470,14 +421,14 @@ const mkBgOpsFromRgb = (rgb: Rgb, wantBright = false): SgrOp[] => {
 
 // Style ops
 const STYLE_TABLE: Record<ReStyleKey, SgrOp> = {
-  reset: { kind: "style", open: [0] },
-  bold: { kind: "style", open: [1] },
-  dim: { kind: "style", open: [2] },
-  italic: { kind: "style", open: [3] },
-  underline: { kind: "style", open: [4] },
-  inverse: { kind: "style", open: [7] },
-  hidden: { kind: "style", open: [8] },
-  strikethrough: { kind: "style", open: [9] },
+  reset: { kind: "style", open: [SGR_RESET] },
+  bold: { kind: "style", open: [SGR_BOLD] },
+  dim: { kind: "style", open: [SGR_DIM] },
+  italic: { kind: "style", open: [SGR_ITALIC] },
+  underline: { kind: "style", open: [SGR_UNDERLINE] },
+  inverse: { kind: "style", open: [SGR_INVERSE] },
+  hidden: { kind: "style", open: [SGR_HIDDEN] },
+  strikethrough: { kind: "style", open: [SGR_STRIKETHROUGH] },
 };
 
 // Lookup maps
@@ -491,114 +442,41 @@ const STYLE_KEYS = new Set([
   "hidden",
   "strikethrough",
 ]);
-const DYNAMIC_KEYS = new Set(["rgb", "hex", "hsl", "bgRgb", "bgHex", "bgHsl"]);
 
-// Pre-computed color key maps
-let COLOR_KEY_CACHE: Set<string> | undefined;
-let BG_KEY_CACHE: Set<string> | undefined;
-
-const getColorKeys = (): Set<string> => {
-  if (COLOR_KEY_CACHE) return COLOR_KEY_CACHE;
-
-  const baseColors = [
-    "black",
-    "red",
-    "green",
-    "yellow",
-    "blue",
-    "magenta",
-    "cyan",
-    "white",
-    "gray",
-  ];
-  const extendedColors = [
-    "orange",
-    "pink",
-    "purple",
-    "teal",
-    "lime",
-    "brown",
-    "navy",
-    "maroon",
-    "olive",
-    "silver",
-  ];
-  const grayNames = Array.from({ length: 9 }, (_, i) => `gray${(i + 1) * 10}`);
-
-  COLOR_KEY_CACHE = new Set([
-    ...baseColors,
-    ...extendedColors,
-    ...grayNames,
-    ...baseColors.map((c) => `${c}Bright`),
-    ...extendedColors.map((c) => `${c}Bright`),
-    ...baseColors.map((c) => `${c}Pastel`),
-    ...extendedColors.map((c) => `${c}Pastel`),
-    "grayPastel",
-  ]);
-
-  return COLOR_KEY_CACHE;
-};
-
-const getBgKeys = (): Set<string> => {
-  if (BG_KEY_CACHE) return BG_KEY_CACHE;
-
-  BG_KEY_CACHE = new Set();
-  for (const colorKey of getColorKeys()) {
-    const capitalizedKey = colorKey.charAt(0).toUpperCase() + colorKey.slice(1);
-    BG_KEY_CACHE.add(`bg${capitalizedKey}`);
+// Direct color/bg key checks
+const isColorKey = (key: string): boolean => {
+  if (!key || typeof key !== "string") {
+    return false;
   }
-
-  return BG_KEY_CACHE;
+  // Base colors and extended colors
+  if (key in NAMED_COLORS) {
+    return true;
+  }
+  // Bright variants
+  if (key.endsWith("Bright") && key.length > BRIGHT_SUFFIX_LENGTH) {
+    const baseName = key.slice(0, -BRIGHT_SUFFIX_LENGTH);
+    return baseName in NAMED_COLORS;
+  }
+  return false;
 };
 
-// Core chainable builder
-const callableFromOps = (ops: SgrOp[]): FormatCallable => {
-  const fn = ((input: ApplyInput) => applyOpsToText(ops, input)) as FormatCallable;
-  Object.defineProperty(fn, OP_SYMBOL, {
+const isBgKey = (key: string): boolean => {
+  if (!key || typeof key !== "string" || !key.startsWith("bg") || key.length <= BG_PREFIX_LENGTH) {
+    return false;
+  }
+  const colorPart = key.charAt(BG_PREFIX_LENGTH).toLowerCase() + key.slice(BG_COLOR_START);
+  return isColorKey(colorPart);
+};
+
+// Proxy with performance through pre-computed lookups
+const callableProxy = (ops: SgrOp[]): Re => {
+  const base = ((input: ApplyInput) => applyOpsToText(ops, input)) as FormatCallable;
+  Object.defineProperty(base, OP_SYMBOL, {
     value: ops,
     enumerable: false,
     configurable: false,
     writable: false,
   });
-  return fn;
-};
-
-const appendOps = (base: SgrOp[], extra: SgrOp[]): SgrOp[] => {
-  const out: SgrOp[] = [];
-  for (const op of base) out.push(op);
-  for (const op of extra) out.push(op);
-  return out;
-};
-
-// Dynamic creator methods (rgb/hex/hsl + bg variants)
-const mkRgbMethod =
-  (ops: SgrOp[], isBg: boolean): MkRgbFn =>
-  (r: number, g: number, b: number) => {
-    const rgb: Rgb = { r: clampByte(r), g: clampByte(g), b: clampByte(b) };
-    const add = isBg ? mkBgOpsFromRgb(rgb) : mkFgOpsFromRgb(rgb);
-    return callableProxy(appendOps(ops, add));
-  };
-
-const mkHexMethod =
-  (ops: SgrOp[], isBg: boolean): MkHexFn =>
-  (hex: string) => {
-    const rgb = hexToRgb(hex);
-    if (!rgb) return callableProxy(ops);
-    const add = isBg ? mkBgOpsFromRgb(rgb) : mkFgOpsFromRgb(rgb);
-    return callableProxy(appendOps(ops, add));
-  };
-
-const mkHslMethod =
-  (ops: SgrOp[], isBg: boolean): MkHslFn =>
-  (h: number, s: number, l: number) => {
-    const rgb = hslToRgb(h, s, l);
-    const add = isBg ? mkBgOpsFromRgb(rgb) : mkFgOpsFromRgb(rgb);
-    return callableProxy(appendOps(ops, add));
-  };
-
-// Proxy with performance through pre-computed lookups
-const callableProxy = (ops: SgrOp[]): Re => {
-  const base = callableFromOps(ops);
 
   return new Proxy(base as unknown as Re, {
     apply(_target, _thisArg, argArray) {
@@ -609,47 +487,30 @@ const callableProxy = (ops: SgrOp[]): Re => {
       const key = String(prop);
 
       // Ops extractor for chain()
-      if (prop === OP_SYMBOL) return ops;
+      if (prop === OP_SYMBOL) {
+        return ops;
+      }
 
       // Fast path for styles using Set lookup
       if (STYLE_KEYS.has(key)) {
         const op = STYLE_TABLE[key as ReStyleKey];
-        return callableProxy(appendOps(ops, [op]));
+        return callableProxy([...ops, op]);
       }
 
-      // Fast path for dynamic creators using Set lookup
-      if (DYNAMIC_KEYS.has(key)) {
-        const isBg = key.startsWith("bg");
-        switch (key) {
-          case "rgb":
-            return mkRgbMethod(ops, false);
-          case "hex":
-            return mkHexMethod(ops, false);
-          case "hsl":
-            return mkHslMethod(ops, false);
-          case "bgRgb":
-            return mkRgbMethod(ops, true);
-          case "bgHex":
-            return mkHexMethod(ops, true);
-          case "bgHsl":
-            return mkHslMethod(ops, true);
+      // Fast path for colors
+      if (isBgKey(key)) {
+        const raw = key.slice(BG_PREFIX_LENGTH); // remove 'bg'
+        if (!raw) {
+          return callableProxy(ops); // no-op for empty color name
         }
-      }
-
-      // Fast path for colors using Set lookups
-      const bgKeys = getBgKeys();
-      const colorKeys = getColorKeys();
-
-      if (bgKeys.has(key)) {
-        const raw = key.slice(2); // remove 'bg'
         const colorName = raw.charAt(0).toLowerCase() + raw.slice(1);
         const { rgb, wantBright } = parseColorName(colorName as ColorName);
-        return callableProxy(appendOps(ops, mkBgOpsFromRgb(rgb, wantBright)));
+        return callableProxy([...ops, ...mkBgOpsFromRgb(rgb, wantBright)]);
       }
 
-      if (colorKeys.has(key)) {
+      if (isColorKey(key)) {
         const { rgb, wantBright } = parseColorName(key as ColorName);
-        return callableProxy(appendOps(ops, mkFgOpsFromRgb(rgb, wantBright)));
+        return callableProxy([...ops, ...mkFgOpsFromRgb(rgb, wantBright)]);
       }
 
       // Unknown key → return self (no-op), keeps chain resilient
@@ -661,49 +522,16 @@ const callableProxy = (ops: SgrOp[]): Re => {
 // Public root
 export const re: Re = callableProxy([]);
 
-// Standalone creators
-export const rgb: MkRgbFn = (r, g, b) => re.rgb(r, g, b);
-export const hex: MkHexFn = (h) => re.hex(h);
-export const hsl: MkHslFn = (h, s, l) => re.hsl(h, s, l);
-export const bgRgb: MkRgbFn = (r, g, b) => re.bgRgb(r, g, b);
-export const bgHex: MkHexFn = (h) => re.bgHex(h);
-export const bgHsl: MkHslFn = (h, s, l) => re.bgHsl(h, s, l);
-
 // chain(re.bold, re.red, re.underline)("text")
 export const chain = (...parts: FormatCallable[]): Re => {
   const collected: SgrOp[] = [];
   for (const p of parts) {
     const ops = (p as FormatCallable)[OP_SYMBOL] as SgrOp[] | undefined;
     if (ops && ops.length > 0) {
-      for (const op of ops) collected.push(op);
+      for (const op of ops) {
+        collected.push(op);
+      }
     }
   }
   return callableProxy(collected);
-};
-
-// ---- Basic validation helpers you might want to export ----
-
-export const parseRgb = (value: string): Rgb | null => {
-  const v = value.trim();
-  if (!v.toLowerCase().startsWith("rgb(") || !v.endsWith(")")) return null;
-  const inner = v.slice(4, -1);
-  const parts = inner.split(",").map((s) => s.trim());
-  if (parts.length !== 3) return null;
-  const nums = parts.map((p) => Number.parseInt(p, 10));
-  if (!Number.isFinite(nums[0]) || !Number.isFinite(nums[1]) || !Number.isFinite(nums[2]))
-    return null;
-  return { r: clampByte(nums[0]), g: clampByte(nums[1]), b: clampByte(nums[2]) };
-};
-
-export const parseHsl = (value: string): { h: number; s: number; l: number } | null => {
-  const v = value.trim().toLowerCase();
-  if (!v.startsWith("hsl(") || !v.endsWith(")")) return null;
-  const inner = v.slice(4, -1);
-  const parts = inner.split(",").map((s) => s.trim().replace(/%$/u, ""));
-  if (parts.length !== 3) return null;
-  const h = Number.parseFloat(parts[0]);
-  const s = Number.parseFloat(parts[1]);
-  const l = Number.parseFloat(parts[2]);
-  if (!Number.isFinite(h) || !Number.isFinite(s) || !Number.isFinite(l)) return null;
-  return { h, s, l };
 };
