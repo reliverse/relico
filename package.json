@@ -1,22 +1,21 @@
 {
   "name": "@reliverse/relico",
   "author": "reliverse",
-  "version": "1.3.7",
+  "version": "1.3.9",
   "type": "module",
   "description": "@reliverse/relico is a themeable, chainable, typed, truecolor-powered, modern terminal styling toolkit. Designed to make your CLI output colorful, accessible, and human-friendly. It gives you a flexible way to apply colors and styles — with reliability and a smart developer experience baked in. Built for humans, not just terminals.",
   "scripts": {
-    "pub": "bun dler pub",
-    "build": "bun dler build",
+    "pub": "bun rse publish",
     "dev": "bun examples/core.ts",
     "perf": "bun bench && bun size",
-    "latest": "bun update --latest && bun check",
+    "latest": "bun rse update && bun install",
     "size": "bun examples/benchmarks/bundle-size.ts",
     "bench": "bun examples/benchmarks/performance.ts",
-    "check": "tsc --noEmit && biome check --fix --unsafe"
+    "check": "bun tsc --noEmit && bun biome check --fix --unsafe"
   },
   "devDependencies": {
     "@biomejs/biome": "2.2.2",
-    "@reliverse/dler": "^1.7.107",
+    "@reliverse/rse": "^1.7.18",
     "@total-typescript/ts-reset": "^0.6.1",
     "@types/bun": "^1.2.20",
     "@types/node": "^24.3.0",

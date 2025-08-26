@@ -242,7 +242,7 @@ export default defineConfig({
   projectAuthor: "reliverse",
   projectDescription:
     "relico is a library for creating beautiful and customizable console output in TypeScript and JavaScript projects.",
-  version: "1.3.7",
+  version: "1.3.9",
   projectLicense: "MIT",
   projectState: "creating",
   projectRepository: "https://github.com/reliverse/relico",
